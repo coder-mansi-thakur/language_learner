@@ -11,7 +11,7 @@ const Layout = ({ children }) => {
         <Link to="/" className="logo" style={{ textDecoration: 'none' }}>LinguaLearn</Link>
         <nav>
           {/* <Link to="/ui-components" className="nav-link">Design System</Link> */}
-          <Link to="/dashboard" className="nav-link">Dashboard</Link>
+          {currentUser && <Link to="/dashboard" className="nav-link">Dashboard</Link>}
           {currentUser ? (
             <Link to="/profile" className="nav-link">Profile</Link>
           ) : (
