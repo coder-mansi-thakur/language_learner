@@ -13,8 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 // Database Connection
-import './models/User.js'; // Import models to ensure they are registered before sync
-import './models/Language.js';
+import './models/associations.js'; // Import associations to register models and relationships
 import userRoutes from './routes/userRoutes.js';
 import { seedLanguages } from './utils/seedLanguages.js';
 
