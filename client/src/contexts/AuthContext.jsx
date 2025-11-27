@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider } from '../firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -21,8 +22,23 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      
+      if (user) {
+        try {
+          // Sync user with backend
+          await axios.post('http://localhost:5000/api/users/sync', {
+            email: user.email,
+            firebaseUid: user.uid,
+            displayName: user.displayName,
+            photoURL: user.photoURL
+          });
+        } catch (error) {
+          console.error("Error syncing user with backend:", error);
+        }
+      }
+
       setLoading(false);
     });
 

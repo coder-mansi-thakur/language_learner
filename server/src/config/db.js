@@ -19,7 +19,7 @@ export const connectDB = async () => {
     await sequelize.authenticate();
     console.log('PostgreSQL Connected...');
     // Sync models with database
-    await sequelize.sync(); 
+    await sequelize.sync({ alter: true }); 
   } catch (error) {
     console.error('Unable to connect to the database:', error);
     process.exit(1);

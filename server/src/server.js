@@ -14,9 +14,13 @@ app.use(express.json());
 
 // Database Connection
 import './models/User.js'; // Import models to ensure they are registered before sync
+import userRoutes from './routes/userRoutes.js';
+
 connectDB();
 
 // Routes
+app.use('/api/users', userRoutes);
+
 app.get('/', (req, res) => {
   res.send('API is running...');
 });

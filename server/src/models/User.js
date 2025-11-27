@@ -10,7 +10,7 @@ const User = sequelize.define('User', {
   },
   username: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
   },
   email: {
@@ -23,7 +23,12 @@ const User = sequelize.define('User', {
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
+  },
+  firebaseUid: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
   },
   xp: {
     type: DataTypes.INTEGER,
@@ -52,6 +57,7 @@ const User = sequelize.define('User', {
 });
 
 User.prototype.matchPassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
