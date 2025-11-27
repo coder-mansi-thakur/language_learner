@@ -63,7 +63,13 @@ const Dashboard = () => {
                   </div>
                   <h3 style={{ margin: '0 0 10px 0' }}>{lang.name}</h3>
                   <p style={{ margin: '0 0 15px 0', fontSize: '14px', opacity: 0.8 }}>{STRINGS.DASHBOARD.XP}: {lang.UserLanguage.xp}</p>
-                  <button className="retro-btn" style={{ width: '100%' }}>{STRINGS.DASHBOARD.CONTINUE}</button>
+                  <button 
+                    className="retro-btn" 
+                    style={{ width: '100%' }}
+                    onClick={() => navigate(`/learn/${lang.code}`)}
+                  >
+                    {STRINGS.DASHBOARD.CONTINUE}
+                  </button>
                 </div>
               ))}
             </div>
