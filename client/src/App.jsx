@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import LanguageLearn from './pages/LanguageLearn';
+import VocabCMS from './pages/VocabCMS';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/learn/:code" element={<LanguageLearn />} />
+          <Route path="/admin/vocab" element={<VocabCMS />} />
           <Route path="/ui-components" element={<DesignSystem />} />
           {/* Future routes will go here */}
         </Routes>
