@@ -98,6 +98,20 @@ export const STRINGS = {
       ADD_WORD_DESC: "Add a new word to your vocabulary list.",
       WORD_EXISTS: "This word already exists in the library!",
       WORD_ADDED: "Word added successfully!",
+      ERRORS: {
+        SELECT_CATEGORY: "Please select a category.",
+        ADD_FAILED: "Failed to add word.",
+        TRANSLATION_FAILED: "Translation failed. Please try again.",
+      },
+      HELPER: {
+        WORD_IN: "The word in ",
+        MEANING_IN_ENGLISH: "The meaning in English",
+        CREATED_ON_FLY: "Created on the fly",
+      },
+      ACTIONS: {
+        GET_WORD: "Get Word",
+        TRANSLATE: "Translate",
+      },
       FORM: {
         WORD: "Word",
         TRANSLATION: "Translation",

@@ -201,18 +201,15 @@ const Practice = () => {
           onClick={() => setIsFlipped(!isFlipped)}
         >
           <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6 }}>
-              {isFlipped ? STRINGS.PRACTICE.TRANSLATION : language.name}
-            </span>
             <h2 style={{ fontSize: '48px', margin: '20px 0' }}>
-              {isFlipped ? currentCard.translation : currentCard.word}
+              {isFlipped ? currentCard.word : currentCard.translation}
             </h2>
-            {!isFlipped && currentCard.pronunciation && (
+            {isFlipped && currentCard.pronunciation && (
               <p style={{ fontSize: '18px', opacity: 0.8, fontStyle: 'italic' }}>
                 /{currentCard.pronunciation}/
               </p>
             )}
-            {isFlipped && (
+            {isFlipped && currentCard.exampleSentence && (
               <div style={{ marginTop: '20px', fontSize: '16px', opacity: 0.8 }}>
                 <p>"{currentCard.exampleSentence}"</p>
                 <p style={{ fontStyle: 'italic' }}>{currentCard.exampleTranslation}</p>

@@ -47,7 +47,7 @@ const AddWord = () => {
 
     if (!language) return;
     if (!form.categoryId) {
-        setMessage({ type: 'error', text: 'Please select a category.' });
+        setMessage({ type: 'error', text: STRINGS.VOCAB_CMS.VOCABULARY.ERRORS.SELECT_CATEGORY });
         return;
     }
 
@@ -75,7 +75,7 @@ const AddWord = () => {
       });
     } catch (error) {
       console.error(error);
-      setMessage({ type: 'error', text: 'Failed to add word.' });
+      setMessage({ type: 'error', text: STRINGS.VOCAB_CMS.VOCABULARY.ERRORS.ADD_FAILED });
     }
   };
 
@@ -85,7 +85,7 @@ const AddWord = () => {
       const newCategory = await createCategory(ENDPOINTS.CATEGORIES.BASE, {
         name: newCategoryName,
         slug: slug,
-        description: 'Created on the fly'
+        description: STRINGS.VOCAB_CMS.VOCABULARY.HELPER.CREATED_ON_FLY
       });
       await refetchCategories();
       if (newCategory && newCategory.id) {
@@ -101,14 +101,32 @@ const AddWord = () => {
     
     setIsTranslating(true);
     try {
-      // Assuming source is English ('en') and target is the language code
-      const translated = await translateText(form.word, 'en', language.code);
+      // Translate from Target Language to English
+      const translated = await translateText(form.word, language.code, 'en');
       if (translated) {
         setForm(prev => ({ ...prev, translation: translated }));
       }
     } catch (error) {
       console.error("Translation failed", error);
-      setMessage({ type: 'error', text: 'Translation failed. Please try again.' });
+      setMessage({ type: 'error', text: STRINGS.VOCAB_CMS.VOCABULARY.ERRORS.TRANSLATION_FAILED });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const handleReverseTranslate = async () => {
+    if (!form.translation || !language) return;
+    
+    setIsTranslating(true);
+    try {
+      // Translate from English to Target Language
+      const translated = await translateText(form.translation, 'en', language.code);
+      if (translated) {
+        setForm(prev => ({ ...prev, word: translated }));
+      }
+    } catch (error) {
+      console.error("Translation failed", error);
+      setMessage({ type: 'error', text: STRINGS.VOCAB_CMS.VOCABULARY.ERRORS.TRANSLATION_FAILED });
     } finally {
       setIsTranslating(false);
     }
@@ -165,6 +183,7 @@ const AddWord = () => {
 
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FORM.WORD}</label>
+              <small style={{ display: 'block', marginBottom: '5px', opacity: 0.7 }}>{STRINGS.VOCAB_CMS.VOCABULARY.HELPER.WORD_IN}{language.name}</small>
               <input 
                 className="retro-input" 
                 value={form.word}
@@ -176,6 +195,7 @@ const AddWord = () => {
 
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FORM.TRANSLATION}</label>
+              <small style={{ display: 'block', marginBottom: '5px', opacity: 0.7 }}>{STRINGS.VOCAB_CMS.VOCABULARY.HELPER.MEANING_IN_ENGLISH}</small>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <input 
                   className="retro-input" 
@@ -187,11 +207,11 @@ const AddWord = () => {
                 <button 
                   type="button" 
                   className="retro-btn secondary" 
-                  onClick={handleAutoTranslate}
-                  disabled={isTranslating || !form.word}
+                  onClick={handleReverseTranslate}
+                  disabled={isTranslating || !form.translation}
                   style={{ padding: '0 15px', fontSize: '0.9em' }}
                 >
-                  {isTranslating ? '...' : 'Translate'}
+                  {isTranslating ? '...' : STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.GET_WORD}
                 </button>
               </div>
             </div>
