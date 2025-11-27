@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout';
+import Select from '../components/Select';
 import { useGet, usePost } from '../hooks/useApi';
 import { STRINGS } from '../constants/strings';
 import { ENDPOINTS } from '../constants/endpoints';
@@ -40,6 +41,23 @@ const VocabCMS = () => {
       refetchCategories();
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleAddNewCategory = async (newCategoryName) => {
+    const slug = newCategoryName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    try {
+      const newCategory = await createCategory(ENDPOINTS.CATEGORIES.BASE, {
+        name: newCategoryName,
+        slug: slug,
+        description: 'Created on the fly'
+      });
+      await refetchCategories();
+      if (newCategory && newCategory.id) {
+        setVocabForm(prev => ({ ...prev, categoryId: newCategory.id }));
+      }
+    } catch (error) {
+      console.error("Failed to create category on the fly", error);
     }
   };
 
@@ -122,24 +140,22 @@ const VocabCMS = () => {
             <h2>{STRINGS.VOCAB_CMS.VOCABULARY.MANAGE_TITLE}</h2>
             <form onSubmit={handleVocabSubmit} style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <select 
-                  className="retro-input"
+                <Select
                   value={vocabForm.languageId}
-                  onChange={e => setVocabForm({...vocabForm, languageId: e.target.value})}
+                  onChange={(val) => setVocabForm({...vocabForm, languageId: val})}
+                  options={languages?.map(l => ({ value: l.id, label: l.name })) || []}
                   required
-                >
-                  <option value="">{STRINGS.VOCAB_CMS.VOCABULARY.SELECT_LANGUAGE}</option>
-                  {languages?.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
-                <select 
-                  className="retro-input"
+                  placeholder={STRINGS.VOCAB_CMS.VOCABULARY.SELECT_LANGUAGE}
+                />
+                <Select
                   value={vocabForm.categoryId}
-                  onChange={e => setVocabForm({...vocabForm, categoryId: e.target.value})}
+                  onChange={(val) => setVocabForm({...vocabForm, categoryId: val})}
+                  options={categories?.map(c => ({ value: c.id, label: c.name })) || []}
                   required
-                >
-                  <option value="">{STRINGS.VOCAB_CMS.VOCABULARY.SELECT_CATEGORY}</option>
-                  {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                  placeholder={STRINGS.VOCAB_CMS.VOCABULARY.SELECT_CATEGORY}
+                  allowAdd={true}
+                  onAdd={handleAddNewCategory}
+                />
               </div>
               
               <input 
@@ -156,15 +172,16 @@ const VocabCMS = () => {
                 onChange={e => setVocabForm({...vocabForm, translation: e.target.value})}
                 required
               />
-              <select 
-                className="retro-input"
+              <Select
                 value={vocabForm.difficultyLevel}
-                onChange={e => setVocabForm({...vocabForm, difficultyLevel: e.target.value})}
-              >
-                <option value="beginner">{STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.BEGINNER}</option>
-                <option value="intermediate">{STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.INTERMEDIATE}</option>
-                <option value="advanced">{STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.ADVANCED}</option>
-              </select>
+                onChange={(val) => setVocabForm({...vocabForm, difficultyLevel: val})}
+                options={[
+                  { value: 'beginner', label: STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.BEGINNER },
+                  { value: 'intermediate', label: STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.INTERMEDIATE },
+                  { value: 'advanced', label: STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.ADVANCED }
+                ]}
+                placeholder="Select Level"
+              />
 
               <button className="retro-btn" type="submit">{STRINGS.VOCAB_CMS.VOCABULARY.ADD_BUTTON}</button>
             </form>
@@ -172,25 +189,27 @@ const VocabCMS = () => {
             <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', padding: '15px', backgroundColor: 'var(--color-cream)', border: '2px solid var(--border-color)', borderRadius: '8px' }}>
               <div style={{ flex: 1 }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.LANGUAGE}</label>
-                <select 
-                  className="retro-input"
+                <Select
                   value={filterLanguage}
-                  onChange={e => setFilterLanguage(e.target.value)}
-                >
-                  <option value="">{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_LANGUAGES}</option>
-                  {languages?.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
+                  onChange={(val) => setFilterLanguage(val)}
+                  options={[
+                    { value: '', label: STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_LANGUAGES },
+                    ...(languages?.map(l => ({ value: l.id, label: l.name })) || [])
+                  ]}
+                  placeholder={STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_LANGUAGES}
+                />
               </div>
               <div style={{ flex: 1 }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.CATEGORY}</label>
-                <select 
-                  className="retro-input"
+                <Select
                   value={filterCategory}
-                  onChange={e => setFilterCategory(e.target.value)}
-                >
-                  <option value="">{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_CATEGORIES}</option>
-                  {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                  onChange={(val) => setFilterCategory(val)}
+                  options={[
+                    { value: '', label: STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_CATEGORIES },
+                    ...(categories?.map(c => ({ value: c.id, label: c.name })) || [])
+                  ]}
+                  placeholder={STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_CATEGORIES}
+                />
               </div>
             </div>
 

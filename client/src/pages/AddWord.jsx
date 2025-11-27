@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import Select from '../components/Select';
 import { useGet, usePost } from '../hooks/useApi';
 import { STRINGS } from '../constants/strings';
 import { ENDPOINTS } from '../constants/endpoints';
+import { translateText } from '../services/translationService';
 
 const AddWord = () => {
   const { code } = useParams();
@@ -11,13 +13,14 @@ const AddWord = () => {
   
   // Fetch Language Details
   const { data: language, loading: loadingLang } = useGet(ENDPOINTS.LANGUAGES.GET_BY_CODE(code));
-  const { data: categories } = useGet(ENDPOINTS.CATEGORIES.BASE);
+  const { data: categories, refetch: refetchCategories } = useGet(ENDPOINTS.CATEGORIES.BASE);
   
   // Fetch existing vocab to check for duplicates (simple client-side check for now)
   const vocabEndpoint = language ? `${ENDPOINTS.VOCABULARY.BASE}?languageId=${language.id}` : null;
   const { data: allVocab } = useGet(vocabEndpoint, { enabled: !!language });
 
   const { post: createVocab } = usePost();
+  const { post: createCategory } = usePost();
 
   const [form, setForm] = useState({
     word: '',
@@ -29,6 +32,7 @@ const AddWord = () => {
   });
 
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [isTranslating, setIsTranslating] = useState(false);
 
   // Set default category when loaded
   useEffect(() => {
@@ -75,6 +79,41 @@ const AddWord = () => {
     }
   };
 
+  const handleAddNewCategory = async (newCategoryName) => {
+    const slug = newCategoryName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    try {
+      const newCategory = await createCategory(ENDPOINTS.CATEGORIES.BASE, {
+        name: newCategoryName,
+        slug: slug,
+        description: 'Created on the fly'
+      });
+      await refetchCategories();
+      if (newCategory && newCategory.id) {
+        setForm(prev => ({ ...prev, categoryId: newCategory.id }));
+      }
+    } catch (error) {
+      console.error("Failed to create category on the fly", error);
+    }
+  };
+
+  const handleAutoTranslate = async () => {
+    if (!form.word || !language) return;
+    
+    setIsTranslating(true);
+    try {
+      // Assuming source is English ('en') and target is the language code
+      const translated = await translateText(form.word, 'en', language.code);
+      if (translated) {
+        setForm(prev => ({ ...prev, translation: translated }));
+      }
+    } catch (error) {
+      console.error("Translation failed", error);
+      setMessage({ type: 'error', text: 'Translation failed. Please try again.' });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
   if (loadingLang || !language) {
     return (
       <Layout>
@@ -112,19 +151,17 @@ const AddWord = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '15px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}</label>
-              <select 
-                className="retro-input"
-                value={form.categoryId}
-                onChange={e => setForm({...form, categoryId: e.target.value})}
-                required
-                style={{ width: '100%' }}
-              >
-                {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
+                    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '15px' }}>
+            <Select
+              label={STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}
+              value={form.categoryId}
+              onChange={(val) => setForm({...form, categoryId: val})}
+              options={categories?.map(c => ({ value: c.id, label: c.name })) || []}
+              required
+              placeholder={STRINGS.VOCAB_CMS.VOCABULARY.SELECT_CATEGORY}
+              allowAdd={true}
+              onAdd={handleAddNewCategory}
+            />
 
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FORM.WORD}</label>
@@ -139,13 +176,24 @@ const AddWord = () => {
 
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FORM.TRANSLATION}</label>
-              <input 
-                className="retro-input" 
-                value={form.translation}
-                onChange={e => setForm({...form, translation: e.target.value})}
-                required
-                style={{ width: '100%' }}
-              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input 
+                  className="retro-input" 
+                  value={form.translation}
+                  onChange={e => setForm({...form, translation: e.target.value})}
+                  required
+                  style={{ width: '100%', flex: 1 }}
+                />
+                <button 
+                  type="button" 
+                  className="retro-btn secondary" 
+                  onClick={handleAutoTranslate}
+                  disabled={isTranslating || !form.word}
+                  style={{ padding: '0 15px', fontSize: '0.9em' }}
+                >
+                  {isTranslating ? '...' : 'Translate'}
+                </button>
+              </div>
             </div>
 
             <div>
