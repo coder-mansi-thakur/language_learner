@@ -1,50 +1,51 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import '../styles/design-system.css';
+import { STRINGS } from '../constants/strings';
 
 const DesignSystem = () => {
   return (
     <Layout>
       <div className="retro-container">
-        <h1 style={{ textAlign: 'center', marginBottom: '40px' }}>🎨 Retro UI Design System</h1>
+        <h1 style={{ textAlign: 'center', marginBottom: '40px' }}>{STRINGS.DESIGN_SYSTEM.TITLE}</h1>
 
         <section style={{ marginBottom: '60px' }}>
-          <h2>1. Color Palette</h2>
+          <h2>{STRINGS.DESIGN_SYSTEM.SECTIONS.COLOR_PALETTE}</h2>
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            <ColorSwatch color="var(--color-cream)" name="Cream (BG)" />
-            <ColorSwatch color="var(--color-dark-brown)" name="Dark Brown" textColor="white" />
-            <ColorSwatch color="var(--color-orange)" name="Orange" />
-            <ColorSwatch color="var(--color-green)" name="Green" />
-            <ColorSwatch color="var(--color-red)" name="Red" />
-            <ColorSwatch color="var(--color-yellow)" name="Yellow" />
+            <ColorSwatch color="var(--color-cream)" name={STRINGS.DESIGN_SYSTEM.COLORS.CREAM} />
+            <ColorSwatch color="var(--color-dark-brown)" name={STRINGS.DESIGN_SYSTEM.COLORS.DARK_BROWN} textColor="white" />
+            <ColorSwatch color="var(--color-orange)" name={STRINGS.DESIGN_SYSTEM.COLORS.ORANGE} />
+            <ColorSwatch color="var(--color-green)" name={STRINGS.DESIGN_SYSTEM.COLORS.GREEN} />
+            <ColorSwatch color="var(--color-red)" name={STRINGS.DESIGN_SYSTEM.COLORS.RED} />
+            <ColorSwatch color="var(--color-yellow)" name={STRINGS.DESIGN_SYSTEM.COLORS.YELLOW} />
           </div>
         </section>
 
         <section style={{ marginBottom: '60px' }}>
-          <h2>2. Buttons</h2>
+          <h2>{STRINGS.DESIGN_SYSTEM.SECTIONS.BUTTONS}</h2>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <button className="retro-btn">Primary Button</button>
-            <button className="retro-btn secondary">Secondary Button</button>
-            <button className="retro-btn accent">Accent Button</button>
+            <button className="retro-btn">{STRINGS.DESIGN_SYSTEM.BUTTONS.PRIMARY}</button>
+            <button className="retro-btn secondary">{STRINGS.DESIGN_SYSTEM.BUTTONS.SECONDARY}</button>
+            <button className="retro-btn accent">{STRINGS.DESIGN_SYSTEM.BUTTONS.ACCENT}</button>
           </div>
         </section>
 
         <section style={{ marginBottom: '60px' }}>
-          <h2>3. Inputs</h2>
+          <h2>{STRINGS.DESIGN_SYSTEM.SECTIONS.INPUTS}</h2>
           <div style={{ maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <input type="text" className="retro-input" placeholder="Type something..." />
-            <input type="password" className="retro-input" placeholder="Password" />
+            <input type="text" className="retro-input" placeholder={STRINGS.DESIGN_SYSTEM.INPUTS.PLACEHOLDER_TEXT} />
+            <input type="password" className="retro-input" placeholder={STRINGS.DESIGN_SYSTEM.INPUTS.PLACEHOLDER_PASSWORD} />
           </div>
         </section>
 
         <section style={{ marginBottom: '60px' }}>
-          <h2>4. Cards & Windows</h2>
+          <h2>{STRINGS.DESIGN_SYSTEM.SECTIONS.CARDS_WINDOWS}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
             
             {/* Simple Card */}
             <div className="retro-card">
-              <h3>Simple Card</h3>
-              <p>This is a basic content container with the signature hard shadow.</p>
+              <h3>{STRINGS.DESIGN_SYSTEM.CARDS.SIMPLE_TITLE}</h3>
+              <p>{STRINGS.DESIGN_SYSTEM.CARDS.SIMPLE_DESC}</p>
             </div>
 
             {/* Window - Green */}
@@ -54,11 +55,11 @@ const DesignSystem = () => {
                   <div className="control-dot"></div>
                   <div className="control-dot"></div>
                 </div>
-                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>explorer.exe</span>
+                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{STRINGS.DESIGN_SYSTEM.CARDS.EXPLORER_TITLE}</span>
               </div>
               <div className="retro-window-content">
-                <p>Window content goes here.</p>
-                <button className="retro-btn" style={{ marginTop: '10px', width: '100%' }}>Action</button>
+                <p>{STRINGS.DESIGN_SYSTEM.CARDS.WINDOW_CONTENT}</p>
+                <button className="retro-btn" style={{ marginTop: '10px', width: '100%' }}>{STRINGS.DESIGN_SYSTEM.CARDS.ACTION_BUTTON}</button>
               </div>
             </div>
 
@@ -69,14 +70,14 @@ const DesignSystem = () => {
                   <div className="control-dot"></div>
                   <div className="control-dot"></div>
                 </div>
-                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>alert.exe</span>
+                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{STRINGS.DESIGN_SYSTEM.CARDS.ALERT_TITLE}</span>
               </div>
               <div className="retro-window-content" style={{ textAlign: 'center' }}>
-                <p><strong>Warning!</strong></p>
-                <p>Are you ready to learn?</p>
+                <p><strong>{STRINGS.DESIGN_SYSTEM.CARDS.WARNING}</strong></p>
+                <p>{STRINGS.DESIGN_SYSTEM.CARDS.READY_PROMPT}</p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px' }}>
-                  <button className="retro-btn">Yes</button>
-                  <button className="retro-btn secondary">No</button>
+                  <button className="retro-btn">{STRINGS.DESIGN_SYSTEM.CARDS.YES}</button>
+                  <button className="retro-btn secondary">{STRINGS.DESIGN_SYSTEM.CARDS.NO}</button>
                 </div>
               </div>
             </div>
@@ -85,12 +86,12 @@ const DesignSystem = () => {
         </section>
 
         <section style={{ marginBottom: '60px' }}>
-          <h2>5. Typography</h2>
+          <h2>{STRINGS.DESIGN_SYSTEM.SECTIONS.TYPOGRAPHY}</h2>
           <div className="retro-card">
-            <h1>Heading 1</h1>
-            <h2>Heading 2</h2>
-            <h3>Heading 3</h3>
-            <p>Body text. The quick brown fox jumps over the lazy dog. <strong>Bold text</strong> and <em>italic text</em>.</p>
+            <h1>{STRINGS.DESIGN_SYSTEM.TYPOGRAPHY.H1}</h1>
+            <h2>{STRINGS.DESIGN_SYSTEM.TYPOGRAPHY.H2}</h2>
+            <h3>{STRINGS.DESIGN_SYSTEM.TYPOGRAPHY.H3}</h3>
+            <p>{STRINGS.DESIGN_SYSTEM.TYPOGRAPHY.BODY}<strong>{STRINGS.DESIGN_SYSTEM.TYPOGRAPHY.BOLD}</strong>{STRINGS.DESIGN_SYSTEM.TYPOGRAPHY.AND}<em>{STRINGS.DESIGN_SYSTEM.TYPOGRAPHY.ITALIC}</em>{STRINGS.DESIGN_SYSTEM.TYPOGRAPHY.DOT}</p>
           </div>
         </section>
 

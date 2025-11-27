@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { STRINGS } from '../constants/strings';
 
 const Login = () => {
   const { loginWithGoogle } = useAuth();
@@ -12,8 +13,8 @@ const Login = () => {
       await loginWithGoogle();
       navigate('/profile');
     } catch (error) {
-      console.error("Failed to log in", error);
-      alert("Failed to log in: " + error.message);
+      console.error(STRINGS.LOGIN.ERROR_FAILED, error);
+      alert(STRINGS.LOGIN.ERROR_PREFIX + error.message);
     }
   };
 
@@ -26,14 +27,14 @@ const Login = () => {
               <div className="control-dot"></div>
               <div className="control-dot"></div>
             </div>
-            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>login.exe</span>
+            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{STRINGS.LOGIN.WINDOW_TITLE}</span>
           </div>
           <div className="retro-window-content" style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <h2 style={{ marginBottom: '20px' }}>Welcome Back!</h2>
-            <p style={{ marginBottom: '30px' }}>Please log in to access your profile and continue learning.</p>
+            <h2 style={{ marginBottom: '20px' }}>{STRINGS.LOGIN.WELCOME_BACK}</h2>
+            <p style={{ marginBottom: '30px' }}>{STRINGS.LOGIN.INSTRUCTION}</p>
             
             <button onClick={handleGoogleLogin} className="retro-btn" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-              <span>Login with Google</span>
+              <span>{STRINGS.LOGIN.GOOGLE_LOGIN}</span>
             </button>
           </div>
         </div>

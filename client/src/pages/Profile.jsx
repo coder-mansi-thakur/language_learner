@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { STRINGS } from '../constants/strings';
 
 const Profile = () => {
   const { currentUser, logout } = useAuth();
@@ -13,7 +14,7 @@ const Profile = () => {
       await logout();
       navigate('/');
     } catch (error) {
-      console.error("Failed to log out", error);
+      console.error(STRINGS.PROFILE.LOGOUT_ERROR, error);
     }
   };
 
@@ -21,7 +22,7 @@ const Profile = () => {
     return (
       <Layout>
         <div className="retro-container">
-          <p>Please log in to view your profile.</p>
+          <p>{STRINGS.PROFILE.LOGIN_PROMPT}</p>
         </div>
       </Layout>
     );
@@ -35,7 +36,7 @@ const Profile = () => {
             {currentUser.photoURL && !imgError ? (
               <img 
                 src={currentUser.photoURL} 
-                alt="Profile" 
+                alt={STRINGS.PROFILE.ALT_PROFILE} 
                 onError={() => setImgError(true)}
                 style={{ 
                   width: '80px', 
@@ -65,31 +66,31 @@ const Profile = () => {
               </div>
             )}
             <div>
-              <h1 style={{ margin: 0 }}>{currentUser.displayName || 'User'}</h1>
+              <h1 style={{ margin: 0 }}>{currentUser.displayName || STRINGS.PROFILE.DEFAULT_USER}</h1>
               <p style={{ margin: '5px 0', color: 'var(--color-dark-brown)', opacity: 0.8 }}>{currentUser.email}</p>
             </div>
           </div>
 
           <div className="retro-window" style={{ marginBottom: '30px' }}>
             <div className="retro-window-header">
-              <span style={{ fontWeight: 'bold' }}>stats.txt</span>
+              <span style={{ fontWeight: 'bold' }}>{STRINGS.PROFILE.STATS_TITLE}</span>
             </div>
             <div className="retro-window-content">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div style={{ textAlign: 'center' }}>
                   <h3 style={{ margin: '0 0 5px 0', fontSize: '24px' }}>0</h3>
-                  <p style={{ margin: 0, fontSize: '14px' }}>Day Streak</p>
+                  <p style={{ margin: 0, fontSize: '14px' }}>{STRINGS.PROFILE.DAY_STREAK}</p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <h3 style={{ margin: '0 0 5px 0', fontSize: '24px' }}>0</h3>
-                  <p style={{ margin: 0, fontSize: '14px' }}>XP Earned</p>
+                  <p style={{ margin: 0, fontSize: '14px' }}>{STRINGS.PROFILE.XP_EARNED}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <button onClick={handleLogout} className="retro-btn secondary" style={{ width: '100%' }}>
-            Log Out
+            {STRINGS.PROFILE.LOGOUT_BUTTON}
           </button>
         </div>
       </div>

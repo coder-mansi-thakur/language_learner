@@ -1,0 +1,80 @@
+export const STRINGS = {
+  APP_NAME: "LinguaLearn",
+  NAVIGATION: {
+    DASHBOARD: "Dashboard",
+    PROFILE: "Profile",
+    LOGIN: "Login",
+  },
+  HOME: {
+    WELCOME: "Welcome to LinguaLearn",
+    SUBTITLE: "Start your language learning journey today!",
+    START_BUTTON: "Start Learning",
+  },
+  LOGIN: {
+    WINDOW_TITLE: "login.exe",
+    WELCOME_BACK: "Welcome Back!",
+    INSTRUCTION: "Please log in to access your profile and continue learning.",
+    GOOGLE_LOGIN: "Login with Google",
+    ERROR_FAILED: "Failed to log in",
+    ERROR_PREFIX: "Failed to log in: ",
+  },
+  PROFILE: {
+    LOGOUT_ERROR: "Failed to log out",
+    LOGIN_PROMPT: "Please log in to view your profile.",
+    ALT_PROFILE: "Profile",
+    DEFAULT_USER: "User",
+    STATS_TITLE: "stats.txt",
+    DAY_STREAK: "Day Streak",
+    XP_EARNED: "XP Earned",
+    LOGOUT_BUTTON: "Log Out",
+  },
+  DESIGN_SYSTEM: {
+    TITLE: "🎨 Retro UI Design System",
+    SECTIONS: {
+      COLOR_PALETTE: "1. Color Palette",
+      BUTTONS: "2. Buttons",
+      INPUTS: "3. Inputs",
+      CARDS_WINDOWS: "4. Cards & Windows",
+      TYPOGRAPHY: "5. Typography",
+    },
+    COLORS: {
+      CREAM: "Cream (BG)",
+      DARK_BROWN: "Dark Brown",
+      ORANGE: "Orange",
+      GREEN: "Green",
+      RED: "Red",
+      YELLOW: "Yellow",
+    },
+    BUTTONS: {
+      PRIMARY: "Primary Button",
+      SECONDARY: "Secondary Button",
+      ACCENT: "Accent Button",
+    },
+    INPUTS: {
+      PLACEHOLDER_TEXT: "Type something...",
+      PLACEHOLDER_PASSWORD: "Password",
+    },
+    CARDS: {
+      SIMPLE_TITLE: "Simple Card",
+      SIMPLE_DESC: "This is a basic content container with the signature hard shadow.",
+      EXPLORER_TITLE: "explorer.exe",
+      WINDOW_CONTENT: "Window content goes here.",
+      ACTION_BUTTON: "Action",
+      ALERT_TITLE: "alert.exe",
+      WARNING: "Warning!",
+      READY_PROMPT: "Are you ready to learn?",
+      YES: "Yes",
+      NO: "No",
+    },
+    TYPOGRAPHY: {
+      H1: "Heading 1",
+      H2: "Heading 2",
+      H3: "Heading 3",
+      BODY: "Body text. The quick brown fox jumps over the lazy dog. ",
+      BOLD: "Bold text",
+      AND: " and ",
+      ITALIC: "italic text",
+      DOT: ".",
+    }
+  }
+};
