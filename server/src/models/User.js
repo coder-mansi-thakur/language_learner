@@ -30,6 +30,14 @@ const User = sequelize.define('User', {
     allowNull: true,
     unique: true,
   },
+  displayName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  photoURL: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   xp: {
     type: DataTypes.INTEGER,
     defaultValue: 0,

@@ -2,22 +2,34 @@ import Vocabulary from '../models/Vocabulary.js';
 import Category from '../models/Category.js';
 import Language from '../models/Language.js';
 import User from '../models/User.js';
+import UserVocabulary from '../models/UserVocabulary.js';
 
 export const getAllVocabulary = async (req, res) => {
-  const { languageId, categoryId, createdBy } = req.query;
+  const { languageId, categoryId, createdBy, includeProgressForUserId } = req.query;
   const where = {};
   if (languageId) where.languageId = languageId;
   if (categoryId) where.categoryId = categoryId;
   if (createdBy) where.createdBy = createdBy;
 
+  const include = [
+    { model: Category, attributes: ['name', 'slug'] },
+    { model: Language, attributes: ['name', 'code'] },
+    { model: User, as: 'creator', attributes: ['displayName', 'email'] }
+  ];
+
+  if (includeProgressForUserId) {
+    include.push({
+      model: UserVocabulary,
+      where: { userId: includeProgressForUserId },
+      required: false,
+      attributes: ['strength', 'status']
+    });
+  }
+
   try {
     const vocabulary = await Vocabulary.findAll({
       where,
-      include: [
-        { model: Category, attributes: ['name', 'slug'] },
-        { model: Language, attributes: ['name', 'code'] },
-        { model: User, as: 'creator', attributes: ['displayName', 'email'] }
-      ]
+      include
     });
     res.json(vocabulary);
   } catch (error) {

@@ -89,6 +89,14 @@ const Profile = () => {
             </div>
           </div>
 
+          <button 
+            onClick={() => navigate('/my-vocab')} 
+            className="retro-btn" 
+            style={{ width: '100%', marginBottom: '15px' }}
+          >
+            My Vocabulary
+          </button>
+
           <button onClick={handleLogout} className="retro-btn secondary" style={{ width: '100%' }}>
             {STRINGS.PROFILE.LOGOUT_BUTTON}
           </button>

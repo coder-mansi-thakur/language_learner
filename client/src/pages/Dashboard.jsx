@@ -6,6 +6,7 @@ import { ENDPOINTS } from '../constants/endpoints';
 import { useNavigate } from 'react-router-dom';
 import { useGet, usePost } from '../hooks/useApi';
 import Modal from '../components/Modal';
+import ProgressBar from '../components/ProgressBar';
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
@@ -70,7 +71,10 @@ const Dashboard = () => {
                     <span className="retro-tag" style={{ textTransform: 'capitalize' }}>{lang.UserLanguage.proficiency}</span>
                   </div>
                   <h3 style={{ margin: '0 0 10px 0' }}>{lang.name}</h3>
-                  <p style={{ margin: '0 0 15px 0', fontSize: '14px', opacity: 0.8 }}>{STRINGS.DASHBOARD.XP}: {lang.UserLanguage.xp}</p>
+                  <p style={{ margin: '0 0 5px 0', fontSize: '14px', opacity: 0.8 }}>{STRINGS.DASHBOARD.XP}: {lang.UserLanguage.xp}</p>
+                  <div style={{ marginBottom: '15px' }}>
+                    <ProgressBar value={lang.UserLanguage.xp} max={1000} />
+                  </div>
                   <button 
                     className="retro-btn" 
                     style={{ width: '100%' }}

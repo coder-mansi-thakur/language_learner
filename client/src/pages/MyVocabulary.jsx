@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import Select from '../components/Select';
+import ProgressBar from '../components/ProgressBar';
 import { useGet } from '../hooks/useApi';
 import { useAuth } from '../contexts/AuthContext';
 import { STRINGS } from '../constants/strings';
@@ -20,7 +21,10 @@ const MyVocabulary = () => {
   const queryParams = new URLSearchParams();
   if (filterLanguage) queryParams.append('languageId', filterLanguage);
   if (filterCategory) queryParams.append('categoryId', filterCategory);
-  if (dbUser) queryParams.append('createdBy', dbUser.id);
+  if (dbUser) {
+    queryParams.append('createdBy', dbUser.id);
+    queryParams.append('includeProgressForUserId', dbUser.id);
+  }
   
   const vocabEndpoint = dbUser ? `${ENDPOINTS.VOCABULARY.BASE}?${queryParams.toString()}` : null;
 
@@ -79,11 +83,14 @@ const MyVocabulary = () => {
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LANGUAGE}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LEVEL}</th>
+                        <th style={{ textAlign: 'left', padding: '15px' }}>Mastery</th>
                     </tr>
                     </thead>
                     <tbody>
                     {vocabulary?.length > 0 ? (
-                        vocabulary.map(vocab => (
+                        vocabulary.map(vocab => {
+                            const progress = vocab.UserVocabularies?.[0]?.strength || 0;
+                            return (
                             <tr key={vocab.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                             <td style={{ padding: '15px', fontWeight: 'bold' }}>{vocab.word}</td>
                             <td style={{ padding: '15px' }}>{vocab.translation}</td>
@@ -94,8 +101,11 @@ const MyVocabulary = () => {
                                 {vocab.difficultyLevel}
                                 </span>
                             </td>
+                            <td style={{ padding: '15px', width: '150px' }}>
+                                <ProgressBar value={progress * 100} max={100} />
+                            </td>
                             </tr>
-                        ))
+                        )})
                     ) : (
                         <tr>
                             <td colSpan="5" style={{ padding: '20px', textAlign: 'center' }}>No vocabulary found.</td>
