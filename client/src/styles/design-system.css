@@ -38,6 +38,21 @@
   --box-shadow-active: 0px 0px 0px var(--color-dark-brown);
 }
 
+[data-theme="dark"] {
+  --bg-main: #231e1a;
+  --text-main: #FDF6E3;
+  --border-color: #FDF6E3;
+  
+  --color-white: #4A3B32;
+  --color-cream: #231e1a;
+  --color-cream-dark: #362e28;
+  
+  /* Adjust shadows for dark mode to be visible */
+  --box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+  --box-shadow-hover: 2px 2px 0px var(--border-color);
+  --box-shadow-active: 0px 0px 0px var(--border-color);
+}
+
 body {
   background-color: var(--bg-main);
   color: var(--text-main);
