@@ -2,20 +2,21 @@ import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import { useGet, usePost } from '../hooks/useApi';
 import { STRINGS } from '../constants/strings';
+import { ENDPOINTS } from '../constants/endpoints';
 
 const VocabCMS = () => {
   const [activeTab, setActiveTab] = useState('categories');
   const [filterLanguage, setFilterLanguage] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
 
-  const { data: categories, refetch: refetchCategories } = useGet('/categories');
-  const { data: languages } = useGet('/languages');
+  const { data: categories, refetch: refetchCategories } = useGet(ENDPOINTS.CATEGORIES.BASE);
+  const { data: languages } = useGet(ENDPOINTS.LANGUAGES.GET_ALL);
   
   // Construct query string for vocabulary
   const queryParams = new URLSearchParams();
   if (filterLanguage) queryParams.append('languageId', filterLanguage);
   if (filterCategory) queryParams.append('categoryId', filterCategory);
-  const vocabEndpoint = `/vocabulary?${queryParams.toString()}`;
+  const vocabEndpoint = `${ENDPOINTS.VOCABULARY.BASE}?${queryParams.toString()}`;
 
   const { data: vocabulary, refetch: refetchVocab } = useGet(vocabEndpoint);
   
@@ -34,7 +35,7 @@ const VocabCMS = () => {
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
-      await createCategory('/categories', catForm);
+      await createCategory(ENDPOINTS.CATEGORIES.BASE, catForm);
       setCatForm({ name: '', slug: '', description: '' });
       refetchCategories();
     } catch (error) {
@@ -45,7 +46,7 @@ const VocabCMS = () => {
   const handleVocabSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createVocab('/vocabulary', vocabForm);
+      await createVocab(ENDPOINTS.VOCABULARY.BASE, vocabForm);
       setVocabForm({ 
         word: '', 
         translation: '', 
@@ -62,48 +63,48 @@ const VocabCMS = () => {
   return (
     <Layout>
       <div className="retro-container">
-        <h1 style={{ marginBottom: '20px' }}>Vocab CMS</h1>
+        <h1 style={{ marginBottom: '20px' }}>{STRINGS.VOCAB_CMS.TITLE}</h1>
         
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
           <button 
             className={`retro-btn ${activeTab === 'categories' ? '' : 'secondary'}`}
             onClick={() => setActiveTab('categories')}
           >
-            Categories
+            {STRINGS.VOCAB_CMS.TABS.CATEGORIES}
           </button>
           <button 
             className={`retro-btn ${activeTab === 'vocabulary' ? '' : 'secondary'}`}
             onClick={() => setActiveTab('vocabulary')}
           >
-            Vocabulary
+            {STRINGS.VOCAB_CMS.TABS.VOCABULARY}
           </button>
         </div>
 
         {activeTab === 'categories' && (
           <div className="retro-card">
-            <h2>Manage Categories</h2>
+            <h2>{STRINGS.VOCAB_CMS.CATEGORIES.MANAGE_TITLE}</h2>
             <form onSubmit={handleCategorySubmit} style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
               <input 
                 className="retro-input" 
-                placeholder="Category Name" 
+                placeholder={STRINGS.VOCAB_CMS.CATEGORIES.PLACEHOLDER_NAME}
                 value={catForm.name}
                 onChange={e => setCatForm({...catForm, name: e.target.value})}
                 required
               />
               <input 
                 className="retro-input" 
-                placeholder="Slug (e.g. food-drink)" 
+                placeholder={STRINGS.VOCAB_CMS.CATEGORIES.PLACEHOLDER_SLUG}
                 value={catForm.slug}
                 onChange={e => setCatForm({...catForm, slug: e.target.value})}
                 required
               />
               <input 
                 className="retro-input" 
-                placeholder="Description" 
+                placeholder={STRINGS.VOCAB_CMS.CATEGORIES.PLACEHOLDER_DESC}
                 value={catForm.description}
                 onChange={e => setCatForm({...catForm, description: e.target.value})}
               />
-              <button className="retro-btn" type="submit">Add Category</button>
+              <button className="retro-btn" type="submit">{STRINGS.VOCAB_CMS.CATEGORIES.ADD_BUTTON}</button>
             </form>
 
             <div style={{ display: 'grid', gap: '10px' }}>
@@ -118,7 +119,7 @@ const VocabCMS = () => {
 
         {activeTab === 'vocabulary' && (
           <div className="retro-card">
-            <h2>Manage Vocabulary</h2>
+            <h2>{STRINGS.VOCAB_CMS.VOCABULARY.MANAGE_TITLE}</h2>
             <form onSubmit={handleVocabSubmit} style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <select 
@@ -127,7 +128,7 @@ const VocabCMS = () => {
                   onChange={e => setVocabForm({...vocabForm, languageId: e.target.value})}
                   required
                 >
-                  <option value="">Select Language</option>
+                  <option value="">{STRINGS.VOCAB_CMS.VOCABULARY.SELECT_LANGUAGE}</option>
                   {languages?.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
                 <select 
@@ -136,21 +137,21 @@ const VocabCMS = () => {
                   onChange={e => setVocabForm({...vocabForm, categoryId: e.target.value})}
                   required
                 >
-                  <option value="">Select Category</option>
+                  <option value="">{STRINGS.VOCAB_CMS.VOCABULARY.SELECT_CATEGORY}</option>
                   {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               
               <input 
                 className="retro-input" 
-                placeholder="Word (Original)" 
+                placeholder={STRINGS.VOCAB_CMS.VOCABULARY.PLACEHOLDER_WORD}
                 value={vocabForm.word}
                 onChange={e => setVocabForm({...vocabForm, word: e.target.value})}
                 required
               />
               <input 
                 className="retro-input" 
-                placeholder="Translation" 
+                placeholder={STRINGS.VOCAB_CMS.VOCABULARY.PLACEHOLDER_TRANS}
                 value={vocabForm.translation}
                 onChange={e => setVocabForm({...vocabForm, translation: e.target.value})}
                 required
@@ -160,34 +161,34 @@ const VocabCMS = () => {
                 value={vocabForm.difficultyLevel}
                 onChange={e => setVocabForm({...vocabForm, difficultyLevel: e.target.value})}
               >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
+                <option value="beginner">{STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.BEGINNER}</option>
+                <option value="intermediate">{STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.INTERMEDIATE}</option>
+                <option value="advanced">{STRINGS.VOCAB_CMS.VOCABULARY.LEVELS.ADVANCED}</option>
               </select>
 
-              <button className="retro-btn" type="submit">Add Word</button>
+              <button className="retro-btn" type="submit">{STRINGS.VOCAB_CMS.VOCABULARY.ADD_BUTTON}</button>
             </form>
 
             <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', padding: '15px', backgroundColor: 'var(--color-cream)', border: '2px solid var(--border-color)', borderRadius: '8px' }}>
               <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Filter by Language:</label>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.LANGUAGE}</label>
                 <select 
                   className="retro-input"
                   value={filterLanguage}
                   onChange={e => setFilterLanguage(e.target.value)}
                 >
-                  <option value="">All Languages</option>
+                  <option value="">{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_LANGUAGES}</option>
                   {languages?.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Filter by Category:</label>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.CATEGORY}</label>
                 <select 
                   className="retro-input"
                   value={filterCategory}
                   onChange={e => setFilterCategory(e.target.value)}
                 >
-                  <option value="">All Categories</option>
+                  <option value="">{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_CATEGORIES}</option>
                   {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
@@ -197,11 +198,11 @@ const VocabCMS = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '3px solid var(--border-color)', backgroundColor: 'var(--color-cream-dark)' }}>
-                    <th style={{ textAlign: 'left', padding: '15px' }}>Word</th>
-                    <th style={{ textAlign: 'left', padding: '15px' }}>Translation</th>
-                    <th style={{ textAlign: 'left', padding: '15px' }}>Language</th>
-                    <th style={{ textAlign: 'left', padding: '15px' }}>Category</th>
-                    <th style={{ textAlign: 'left', padding: '15px' }}>Level</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.WORD}</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.TRANSLATION}</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LANGUAGE}</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LEVEL}</th>
                   </tr>
                 </thead>
                 <tbody>

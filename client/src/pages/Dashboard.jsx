@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/Layout';
 import { STRINGS } from '../constants/strings';
+import { ENDPOINTS } from '../constants/endpoints';
 import { useNavigate } from 'react-router-dom';
 import { useGet, usePost } from '../hooks/useApi';
 import Modal from '../components/Modal';
@@ -12,20 +13,20 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { data: userData, loading, error, refetch } = useGet(
-    currentUser ? `/users/${currentUser.uid}` : null,
+    currentUser ? ENDPOINTS.USERS.GET_PROFILE(currentUser.uid) : null,
     { enabled: !!currentUser }
   );
 
-  const { data: languages } = useGet('/languages');
+  const { data: languages } = useGet(ENDPOINTS.LANGUAGES.GET_ALL);
   const { post: startLearning } = usePost();
 
   const handleStartLearning = async (languageId) => {
     try {
-      await startLearning(`/users/${currentUser.uid}/languages`, { languageId });
+      await startLearning(ENDPOINTS.USERS.START_LEARNING(currentUser.uid), { languageId });
       setIsModalOpen(false);
       refetch();
     } catch (error) {
-      console.error("Error starting language:", error);
+      console.error(STRINGS.DASHBOARD.ERROR_STARTING, error);
     }
   };
 

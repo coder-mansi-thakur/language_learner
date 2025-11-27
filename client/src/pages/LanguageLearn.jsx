@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useGet } from '../hooks/useApi';
 import { STRINGS } from '../constants/strings';
+import { ENDPOINTS } from '../constants/endpoints';
 
 const LanguageLearn = () => {
   const { code } = useParams();
   const navigate = useNavigate();
-  const { data: language, loading, error } = useGet(`/languages/${code}`);
+  const { data: language, loading, error } = useGet(ENDPOINTS.LANGUAGES.GET_BY_CODE(code));
 
   if (loading) {
     return (
@@ -23,9 +24,9 @@ const LanguageLearn = () => {
     return (
       <Layout>
         <div className="retro-container" style={{ textAlign: 'center' }}>
-          <p>Error loading language.</p>
+          <p>{STRINGS.LANGUAGE_LEARN.ERROR_LOADING}</p>
           <button className="retro-btn" onClick={() => navigate('/dashboard')}>
-            Back to Dashboard
+            {STRINGS.LANGUAGE_LEARN.BACK_DASHBOARD}
           </button>
         </div>
       </Layout>
@@ -40,7 +41,7 @@ const LanguageLearn = () => {
           onClick={() => navigate('/dashboard')}
           style={{ marginBottom: '20px' }}
         >
-          ← Back
+          {STRINGS.LANGUAGE_LEARN.BACK}
         </button>
 
         <div className="retro-card" style={{ textAlign: 'center', padding: '40px' }}>
@@ -49,15 +50,19 @@ const LanguageLearn = () => {
           </span>
           <h1 style={{ fontSize: '36px', marginBottom: '10px' }}>{language.name}</h1>
           <p style={{ fontSize: '18px', opacity: 0.8 }}>
-            Ready to continue your learning journey?
+            {STRINGS.LANGUAGE_LEARN.READY_MESSAGE}
           </p>
           
           <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
             <button className="retro-btn" style={{ fontSize: '18px', padding: '15px 30px' }}>
-              Start Lesson
+              {STRINGS.LANGUAGE_LEARN.START_LESSON}
             </button>
-            <button className="retro-btn secondary" style={{ fontSize: '18px', padding: '15px 30px' }}>
-              Practice
+            <button 
+              className="retro-btn secondary" 
+              style={{ fontSize: '18px', padding: '15px 30px' }}
+              onClick={() => navigate(`/practice/${code}`)}
+            >
+              {STRINGS.LANGUAGE_LEARN.PRACTICE}
             </button>
           </div>
         </div>

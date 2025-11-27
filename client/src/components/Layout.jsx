@@ -24,7 +24,7 @@ const Layout = ({ children }) => {
             onClick={toggleTheme} 
             className="retro-btn secondary" 
             style={{ marginLeft: '20px', padding: '5px 10px', fontSize: '16px' }}
-            title="Toggle Dark Mode"
+            title={STRINGS.NAVIGATION.TOGGLE_THEME}
           >
             {theme === 'light' ? '🌙' : '☀️'}
           </button>

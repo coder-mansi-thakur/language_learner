@@ -4,6 +4,7 @@ export const STRINGS = {
     DASHBOARD: "Dashboard",
     PROFILE: "Profile",
     LOGIN: "Login",
+    TOGGLE_THEME: "Toggle Dark Mode",
   },
   HOME: {
     WELCOME: "Welcome to LinguaLearn",
@@ -17,6 +18,7 @@ export const STRINGS = {
     GOOGLE_LOGIN: "Login with Google",
     ERROR_FAILED: "Failed to log in",
     ERROR_PREFIX: "Failed to log in: ",
+    ERROR_SYNC: "Error syncing user with backend:",
   },
   PROFILE: {
     LOGOUT_ERROR: "Failed to log out",
@@ -43,6 +45,71 @@ export const STRINGS = {
     START: "Start",
     XP: "XP",
     LEVEL: "Level",
+    ERROR_STARTING: "Error starting language:",
+  },
+  LANGUAGE_LEARN: {
+    START_LESSON: "Start Lesson",
+    PRACTICE: "Practice",
+    READY_MESSAGE: "Ready to continue your learning journey?",
+    ERROR_LOADING: "Error loading language.",
+    BACK_DASHBOARD: "Back to Dashboard",
+    BACK: "← Back",
+  },
+  PRACTICE: {
+    SESSION_COMPLETE: "Session Complete! 🎉",
+    REVIEWED_COUNT: (count) => `You've reviewed ${count} words.`,
+    PRACTICE_AGAIN: "Practice Again",
+    NO_VOCAB: "No vocabulary found for this language yet.",
+    EXIT: "Exit",
+    TRANSLATION: "Translation",
+    CLICK_FLIP: "Click to flip",
+    SHOW_ANSWER: "Show Answer",
+    RATING: {
+      AGAIN: "Again",
+      HARD: "Hard",
+      GOOD: "Good",
+      EASY: "Easy",
+    }
+  },
+  VOCAB_CMS: {
+    TITLE: "Vocab CMS",
+    TABS: {
+      CATEGORIES: "Categories",
+      VOCABULARY: "Vocabulary",
+    },
+    CATEGORIES: {
+      MANAGE_TITLE: "Manage Categories",
+      PLACEHOLDER_NAME: "Category Name",
+      PLACEHOLDER_SLUG: "Slug (e.g. food-drink)",
+      PLACEHOLDER_DESC: "Description",
+      ADD_BUTTON: "Add Category",
+    },
+    VOCABULARY: {
+      MANAGE_TITLE: "Manage Vocabulary",
+      SELECT_LANGUAGE: "Select Language",
+      SELECT_CATEGORY: "Select Category",
+      PLACEHOLDER_WORD: "Word (Original)",
+      PLACEHOLDER_TRANS: "Translation",
+      ADD_BUTTON: "Add Word",
+      TABLE: {
+        WORD: "Word",
+        TRANSLATION: "Translation",
+        LANGUAGE: "Language",
+        CATEGORY: "Category",
+        LEVEL: "Level",
+      },
+      FILTERS: {
+        LANGUAGE: "Filter by Language:",
+        CATEGORY: "Filter by Category:",
+        ALL_LANGUAGES: "All Languages",
+        ALL_CATEGORIES: "All Categories",
+      },
+      LEVELS: {
+        BEGINNER: "Beginner",
+        INTERMEDIATE: "Intermediate",
+        ADVANCED: "Advanced",
+      }
+    }
   },
   DESIGN_SYSTEM: {
     TITLE: "🎨 Retro UI Design System",
