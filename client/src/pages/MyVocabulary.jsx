@@ -84,12 +84,14 @@ const MyVocabulary = () => {
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LEVEL}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>Mastery</th>
+                        <th style={{ textAlign: 'left', padding: '15px' }}>Next Review</th>
                     </tr>
                     </thead>
                     <tbody>
                     {vocabulary?.length > 0 ? (
                         vocabulary.map(vocab => {
                             const progress = vocab.UserVocabularies?.[0]?.strength || 0;
+                            const nextReview = vocab.UserVocabularies?.[0]?.nextReviewDate;
                             return (
                             <tr key={vocab.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                             <td style={{ padding: '15px', fontWeight: 'bold' }}>{vocab.word}</td>
@@ -104,11 +106,14 @@ const MyVocabulary = () => {
                             <td style={{ padding: '15px', width: '150px' }}>
                                 <ProgressBar value={progress * 100} max={100} />
                             </td>
+                            <td style={{ padding: '15px' }}>
+                                {nextReview ? new Date(nextReview).toLocaleDateString() : '-'}
+                            </td>
                             </tr>
                         )})
                     ) : (
                         <tr>
-                            <td colSpan="5" style={{ padding: '20px', textAlign: 'center' }}>No vocabulary found.</td>
+                            <td colSpan="7" style={{ padding: '20px', textAlign: 'center' }}>No vocabulary found.</td>
                         </tr>
                     )}
                     </tbody>

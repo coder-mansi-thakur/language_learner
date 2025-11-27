@@ -22,7 +22,7 @@ export const getAllVocabulary = async (req, res) => {
       model: UserVocabulary,
       where: { userId: includeProgressForUserId },
       required: false,
-      attributes: ['strength', 'status']
+      attributes: ['strength', 'status', 'nextReviewDate']
     });
   }
 

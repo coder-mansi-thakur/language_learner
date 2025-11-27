@@ -50,15 +50,38 @@ export const updateWordProgress = async (req, res) => {
       userVocab.status = status || userVocab.status;
       userVocab.strength = strength !== undefined ? strength : userVocab.strength;
       userVocab.lastReviewed = new Date();
-      // Simple spaced repetition logic could go here to set nextReviewDate
+      
+      // Calculate next review date based on strength
+      // Simple SRS: 
+      // 0.0 - 0.2: 1 day
+      // 0.2 - 0.4: 3 days
+      // 0.4 - 0.6: 7 days
+      // 0.6 - 0.8: 14 days
+      // 0.8 - 1.0: 30 days
+      let daysToAdd = 1;
+      const s = userVocab.strength;
+      if (s >= 0.8) daysToAdd = 30;
+      else if (s >= 0.6) daysToAdd = 14;
+      else if (s >= 0.4) daysToAdd = 7;
+      else if (s >= 0.2) daysToAdd = 3;
+      
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + daysToAdd);
+      userVocab.nextReviewDate = nextDate;
+
       await userVocab.save();
     } else {
+      // New word
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + 1); // Review tomorrow
+
       userVocab = await UserVocabulary.create({
         userId: user.id,
         vocabularyId,
         status: status || 'learning',
         strength: strength || 0,
-        lastReviewed: new Date()
+        lastReviewed: new Date(),
+        nextReviewDate: nextDate
       });
     }
 
