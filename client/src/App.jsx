@@ -12,6 +12,7 @@ import Practice from './pages/Practice';
 import VocabCMS from './pages/VocabCMS';
 import AddWord from './pages/AddWord';
 import MyVocabulary from './pages/MyVocabulary';
+import ImageTextExtractor from './pages/ImageTextExtractor';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/add-word/:code" element={<AddWord />} />
             <Route path="/practice/:code" element={<Practice />} />
             <Route path="/my-vocab" element={<MyVocabulary />} />
+            <Route path="/image-extractor" element={<ImageTextExtractor />} />
             <Route path="/admin/vocab" element={<VocabCMS />} />
             <Route path="/ui-components" element={<DesignSystem />} />
             {/* Future routes will go here */}

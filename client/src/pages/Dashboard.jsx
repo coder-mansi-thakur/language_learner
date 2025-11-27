@@ -51,7 +51,13 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="retro-container">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px', gap: '10px' }}>
+            <button 
+                className="retro-btn secondary" 
+                onClick={() => navigate('/image-extractor')}
+            >
+                Image to Text
+            </button>
             <button 
                 className="retro-btn secondary" 
                 onClick={() => navigate('/my-vocab')}
