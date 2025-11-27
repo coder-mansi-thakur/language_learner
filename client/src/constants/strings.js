@@ -188,5 +188,23 @@ export const STRINGS = {
       ITALIC: "italic text",
       DOT: ".",
     }
+  },
+  IMAGE_EXTRACTOR: {
+    TITLE: "Image Text Extractor",
+    EXTRACT_BTN: "Extract Text",
+    EXTRACTING: "Extracting...",
+    EXTRACTED_TITLE: "Extracted Text",
+    FOUND_WORDS_TITLE: "Found Words (Click to Translate)",
+    TRANSLATION_TITLE: "Translation",
+    WORD_LABEL: "Word:",
+    TRANSLATION_LABEL: "Translation (ES):",
+    LOADING: "Loading...",
+    ERROR_TRANSLATING: "Error translating",
+    LANGUAGES: {
+      ENGLISH: "English",
+      KOREAN: "Korean",
+      HINDI: "Hindi",
+    }
   }
 };
+

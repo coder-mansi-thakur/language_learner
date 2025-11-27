@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Tesseract from 'tesseract.js';
 import Layout from '../components/Layout';
 import { translateText } from '../services/translationService';
+import { STRINGS } from '../constants/strings';
 
 const ImageTextExtractor = () => {
   const [image, setImage] = useState(null);
@@ -80,7 +81,7 @@ const ImageTextExtractor = () => {
       const result = await translateText(word, sourceCode, targetCode); 
       setTranslation(result);
     } catch (error) {
-      setTranslation('Error translating');
+      setTranslation(STRINGS.IMAGE_EXTRACTOR.ERROR_TRANSLATING);
     } finally {
       setTranslating(false);
     }
@@ -89,7 +90,7 @@ const ImageTextExtractor = () => {
   return (
     <Layout>
       <div className="retro-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <h1 className="retro-title">Image Text Extractor</h1>
+        <h1 className="retro-title">{STRINGS.IMAGE_EXTRACTOR.TITLE}</h1>
         
         <div className="retro-card">
           <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
@@ -99,9 +100,9 @@ const ImageTextExtractor = () => {
               className="retro-input"
               style={{ width: 'auto' }}
             >
-              <option value="eng">English</option>
-              <option value="kor">Korean</option>
-              <option value="hin">Hindi</option>
+              <option value="eng">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.ENGLISH}</option>
+              <option value="kor">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.KOREAN}</option>
+              <option value="hin">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.HINDI}</option>
             </select>
             <input 
               type="file" 
@@ -127,16 +128,16 @@ const ImageTextExtractor = () => {
             className="retro-btn primary"
             style={{ width: '100%' }}
           >
-            {loading ? `Extracting... ${progress}%` : 'Extract Text'}
+            {loading ? `${STRINGS.IMAGE_EXTRACTOR.EXTRACTING} ${progress}%` : STRINGS.IMAGE_EXTRACTOR.EXTRACT_BTN}
           </button>
         </div>
 
         {text && (
           <div className="retro-card" style={{ marginTop: '20px' }}>
-            <h2 className="retro-subtitle">Extracted Text</h2>
+            <h2 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.EXTRACTED_TITLE}</h2>
             <p style={{ whiteSpace: 'pre-wrap', marginBottom: '20px' }}>{text}</p>
             
-            <h3 className="retro-subtitle">Found Words (Click to Translate)</h3>
+            <h3 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.FOUND_WORDS_TITLE}</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {words.map((word, index) => (
                 <span 
@@ -160,11 +161,11 @@ const ImageTextExtractor = () => {
 
         {selectedWord && (
           <div className="retro-card" style={{ marginTop: '20px', border: '2px solid var(--color-orange)' }}>
-            <h3 className="retro-subtitle">Translation</h3>
-            <p><strong>Word:</strong> {selectedWord}</p>
+            <h3 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_TITLE}</h3>
+            <p><strong>{STRINGS.IMAGE_EXTRACTOR.WORD_LABEL}</strong> {selectedWord}</p>
             <p>
-              <strong>Translation (ES):</strong> 
-              {translating ? ' Loading...' : ` ${translation}`}
+              <strong>{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_LABEL}</strong> 
+              {translating ? ` ${STRINGS.IMAGE_EXTRACTOR.LOADING}` : ` ${translation}`}
             </p>
           </div>
         )}
