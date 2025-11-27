@@ -44,27 +44,70 @@ const Dashboard = () => {
   }
 
   const learningLanguages = userData?.Languages?.filter(l => l.UserLanguage.status === 'learning') || [];
+  const otherLanguages = languages?.filter(lang => !learningLanguages.some(l => l.id === lang.id)) || [];
 
   return (
     <Layout>
       <div className="retro-container">
+        {/* <h1 style={{ marginBottom: '30px' }}>{STRINGS.DASHBOARD.TITLE}</h1> */}
+        
         {learningLanguages.length > 0 && (
-          <div className="retro-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <h2 style={{ margin: 0 }}>{STRINGS.DASHBOARD.LEARNING_COUNT}</h2>
-                <p style={{ fontSize: '48px', fontWeight: 'bold', margin: '10px 0' }}>
-                  {learningLanguages.length}
-                </p>
-              </div>
-              <div style={{ fontSize: '64px' }}>
-                📚
+          <>
+            <div className="retro-card" style={{ marginBottom: '40px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <h2 style={{ margin: 0 }}>{STRINGS.DASHBOARD.LEARNING_COUNT}</h2>
+                  <p style={{ fontSize: '48px', fontWeight: 'bold', margin: '10px 0' }}>
+                    {learningLanguages.length}
+                  </p>
+                </div>
+                <div style={{ fontSize: '64px' }}>
+                  📚
+                </div>
               </div>
             </div>
-          </div>
+
+            <h2 style={{ marginBottom: '20px' }}>{STRINGS.DASHBOARD.MY_LANGUAGES}</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              {learningLanguages.map(lang => (
+                <div key={lang.id} className="retro-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                    <span style={{ fontSize: '40px' }}>{lang.flag}</span>
+                    <span className="retro-tag" style={{ textTransform: 'capitalize' }}>{lang.UserLanguage.proficiency}</span>
+                  </div>
+                  <h3 style={{ margin: '0 0 10px 0' }}>{lang.name}</h3>
+                  <p style={{ margin: '0 0 15px 0', fontSize: '14px', opacity: 0.8 }}>{STRINGS.DASHBOARD.XP}: {lang.UserLanguage.xp}</p>
+                  <button className="retro-btn" style={{ width: '100%' }}>{STRINGS.DASHBOARD.CONTINUE}</button>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
-        {learningLanguages.length === 0 && (
+        {otherLanguages.length > 0 && (
+          <>
+            <h2 style={{ marginBottom: '20px' }}>{STRINGS.DASHBOARD.EXPLORE}</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+              {otherLanguages.map(lang => (
+                <div key={lang.id} className="retro-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                    <span style={{ fontSize: '40px' }}>{lang.flag}</span>
+                  </div>
+                  <h3 style={{ margin: '0 0 15px 0' }}>{lang.name}</h3>
+                  <button 
+                    className="retro-btn secondary" 
+                    style={{ width: '100%' }}
+                    onClick={() => handleStartLearning(lang.id)}
+                  >
+                    {STRINGS.DASHBOARD.START}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {learningLanguages.length === 0 && otherLanguages.length === 0 && (
           <div style={{ marginTop: '30px', textAlign: 'center' }}>
             <p>{STRINGS.DASHBOARD.NO_LANGUAGES}</p>
             <button onClick={() => setIsModalOpen(true)} className="retro-btn" style={{ marginTop: '10px' }}>{STRINGS.DASHBOARD.START_LEARNING}</button>

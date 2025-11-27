@@ -4,7 +4,25 @@ import UserLanguage from '../models/UserLanguage.js';
 
 export const syncUser = async (req, res) => {
   const { email, firebaseUid, displayName, photoURL } = req.body;
-// ...existing code...
+
+  try {
+    let user = await User.findOne({ where: { firebaseUid } });
+
+    if (user) {
+      user.email = email;
+      user.displayName = displayName;
+      user.photoURL = photoURL;
+      await user.save();
+      return res.json(user);
+    }
+
+    user = await User.create({
+      email,
+      firebaseUid,
+      displayName,
+      photoURL,
+    });
+
     res.status(201).json(user);
   } catch (error) {
     console.error('Error syncing user:', error);

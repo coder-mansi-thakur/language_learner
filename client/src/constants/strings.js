@@ -37,6 +37,12 @@ export const STRINGS = {
     ERROR_FETCHING_DATA: "Error fetching user data:",
     SELECT_LANGUAGE: "Select a Language",
     START_BUTTON: "Start",
+    MY_LANGUAGES: "My Languages",
+    EXPLORE: "Explore Languages",
+    CONTINUE: "Continue",
+    START: "Start",
+    XP: "XP",
+    LEVEL: "Level",
   },
   DESIGN_SYSTEM: {
     TITLE: "🎨 Retro UI Design System",
