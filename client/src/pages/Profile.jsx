@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -6,6 +6,7 @@ import Layout from '../components/Layout';
 const Profile = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const [imgError, setImgError] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -31,21 +32,40 @@ const Profile = () => {
       <div className="retro-container">
         <div className="retro-card" style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-            {currentUser.photoURL && (
+            {currentUser.photoURL && !imgError ? (
               <img 
                 src={currentUser.photoURL} 
                 alt="Profile" 
+                onError={() => setImgError(true)}
                 style={{ 
                   width: '80px', 
                   height: '80px', 
                   borderRadius: '50%', 
                   border: '3px solid var(--color-dark-brown)',
-                  boxShadow: '4px 4px 0px var(--color-dark-brown)'
+                  boxShadow: '4px 4px 0px var(--color-dark-brown)',
+                  objectFit: 'cover'
                 }} 
               />
+            ) : (
+              <div style={{ 
+                width: '80px', 
+                height: '80px', 
+                borderRadius: '50%', 
+                border: '3px solid var(--color-dark-brown)',
+                boxShadow: '4px 4px 0px var(--color-dark-brown)',
+                backgroundColor: 'var(--color-yellow)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: 'var(--color-dark-brown)'
+              }}>
+                {currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : 'U'}
+              </div>
             )}
             <div>
-              <h1 style={{ margin: 0 }}>{currentUser.displayName}</h1>
+              <h1 style={{ margin: 0 }}>{currentUser.displayName || 'User'}</h1>
               <p style={{ margin: '5px 0', color: 'var(--color-dark-brown)', opacity: 0.8 }}>{currentUser.email}</p>
             </div>
           </div>
