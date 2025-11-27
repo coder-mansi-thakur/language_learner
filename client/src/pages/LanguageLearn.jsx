@@ -44,6 +44,15 @@ const LanguageLearn = () => {
           {STRINGS.LANGUAGE_LEARN.BACK}
         </button>
 
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+            <button 
+                className="retro-btn secondary" 
+                onClick={() => navigate('/my-vocab')}
+            >
+                My Vocabulary
+            </button>
+        </div>
+
         <div className="retro-card" style={{ textAlign: 'center', padding: '40px' }}>
           <span style={{ fontSize: '80px', display: 'block', marginBottom: '20px' }}>
             {language.flag}

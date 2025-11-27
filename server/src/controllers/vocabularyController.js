@@ -4,10 +4,11 @@ import Language from '../models/Language.js';
 import User from '../models/User.js';
 
 export const getAllVocabulary = async (req, res) => {
-  const { languageId, categoryId } = req.query;
+  const { languageId, categoryId, createdBy } = req.query;
   const where = {};
   if (languageId) where.languageId = languageId;
   if (categoryId) where.categoryId = categoryId;
+  if (createdBy) where.createdBy = createdBy;
 
   try {
     const vocabulary = await Vocabulary.findAll({
