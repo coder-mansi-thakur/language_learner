@@ -14,9 +14,13 @@ app.use(express.json());
 
 // Database Connection
 import './models/User.js'; // Import models to ensure they are registered before sync
+import './models/Language.js';
 import userRoutes from './routes/userRoutes.js';
+import { seedLanguages } from './utils/seedLanguages.js';
 
-connectDB();
+connectDB().then(() => {
+  seedLanguages();
+});
 
 // Routes
 app.use('/api/users', userRoutes);
