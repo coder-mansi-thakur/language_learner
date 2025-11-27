@@ -1,6 +1,7 @@
 import Vocabulary from '../models/Vocabulary.js';
 import Category from '../models/Category.js';
 import Language from '../models/Language.js';
+import User from '../models/User.js';
 
 export const getAllVocabulary = async (req, res) => {
   const { languageId, categoryId } = req.query;
@@ -13,7 +14,8 @@ export const getAllVocabulary = async (req, res) => {
       where,
       include: [
         { model: Category, attributes: ['name', 'slug'] },
-        { model: Language, attributes: ['name', 'code'] }
+        { model: Language, attributes: ['name', 'code'] },
+        { model: User, as: 'creator', attributes: ['displayName', 'email'] }
       ]
     });
     res.json(vocabulary);
@@ -24,7 +26,7 @@ export const getAllVocabulary = async (req, res) => {
 };
 
 export const createVocabulary = async (req, res) => {
-  const { word, translation, pronunciation, exampleSentence, exampleTranslation, difficultyLevel, languageId, categoryId } = req.body;
+  const { word, translation, pronunciation, exampleSentence, exampleTranslation, difficultyLevel, languageId, categoryId, createdBy } = req.body;
   try {
     const vocabulary = await Vocabulary.create({
       word,
@@ -34,7 +36,8 @@ export const createVocabulary = async (req, res) => {
       exampleTranslation,
       difficultyLevel,
       languageId,
-      categoryId
+      categoryId,
+      createdBy
     });
     res.status(201).json(vocabulary);
   } catch (error) {

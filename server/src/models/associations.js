@@ -22,6 +22,10 @@ Vocabulary.belongsTo(Language, { foreignKey: 'languageId' });
 Category.hasMany(Vocabulary, { foreignKey: 'categoryId' });
 Vocabulary.belongsTo(Category, { foreignKey: 'categoryId' });
 
+// User Created Vocabulary
+User.hasMany(Vocabulary, { foreignKey: 'createdBy', as: 'createdVocabulary' });
+Vocabulary.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
 // User Vocabulary Progress
 User.belongsToMany(Vocabulary, { through: UserVocabulary, foreignKey: 'userId' });
 Vocabulary.belongsToMany(User, { through: UserVocabulary, foreignKey: 'vocabularyId' });

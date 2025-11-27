@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Select from '../components/Select';
 import { useGet, usePost } from '../hooks/useApi';
+import { useAuth } from '../contexts/AuthContext';
 import { STRINGS } from '../constants/strings';
 import { ENDPOINTS } from '../constants/endpoints';
 import { translateText } from '../services/translationService';
@@ -10,11 +11,12 @@ import { translateText } from '../services/translationService';
 const AddWord = () => {
   const { code } = useParams();
   const navigate = useNavigate();
-  
+  const { dbUser } = useAuth();
+
   // Fetch Language Details
   const { data: language, loading: loadingLang } = useGet(ENDPOINTS.LANGUAGES.GET_BY_CODE(code));
   const { data: categories, refetch: refetchCategories } = useGet(ENDPOINTS.CATEGORIES.BASE);
-  
+
   // Fetch existing vocab to check for duplicates (simple client-side check for now)
   const vocabEndpoint = language ? `${ENDPOINTS.VOCABULARY.BASE}?languageId=${language.id}` : null;
   const { data: allVocab } = useGet(vocabEndpoint, { enabled: !!language });
@@ -47,8 +49,8 @@ const AddWord = () => {
 
     if (!language) return;
     if (!form.categoryId) {
-        setMessage({ type: 'error', text: STRINGS.VOCAB_CMS.VOCABULARY.ERRORS.SELECT_CATEGORY });
-        return;
+      setMessage({ type: 'error', text: STRINGS.VOCAB_CMS.VOCABULARY.ERRORS.SELECT_CATEGORY });
+      return;
     }
 
     // Check if word exists
@@ -61,9 +63,10 @@ const AddWord = () => {
     try {
       await createVocab(ENDPOINTS.VOCABULARY.BASE, {
         ...form,
-        languageId: language.id
+        languageId: language.id,
+        createdBy: dbUser?.id
       });
-      
+
       setMessage({ type: 'success', text: STRINGS.VOCAB_CMS.VOCABULARY.WORD_ADDED });
       setForm({
         word: '',
@@ -98,7 +101,7 @@ const AddWord = () => {
 
   const handleAutoTranslate = async () => {
     if (!form.word || !language) return;
-    
+
     setIsTranslating(true);
     try {
       // Translate from Target Language to English
@@ -116,7 +119,7 @@ const AddWord = () => {
 
   const handleReverseTranslate = async () => {
     if (!form.translation || !language) return;
-    
+
     setIsTranslating(true);
     try {
       // Translate from English to Target Language
@@ -145,8 +148,8 @@ const AddWord = () => {
   return (
     <Layout>
       <div className="retro-container" style={{ maxWidth: '600px' }}>
-        <button 
-          className="retro-btn secondary" 
+        <button
+          className="retro-btn secondary"
           onClick={() => navigate(`/learn/${code}`)}
           style={{ marginBottom: '20px' }}
         >
@@ -158,9 +161,9 @@ const AddWord = () => {
           <p style={{ marginBottom: '20px', opacity: 0.8 }}>{STRINGS.VOCAB_CMS.VOCABULARY.ADD_WORD_DESC}</p>
 
           {message.text && (
-            <div className={`retro-alert ${message.type === 'error' ? 'error' : 'success'}`} style={{ 
-              padding: '10px', 
-              marginBottom: '20px', 
+            <div className={`retro-alert ${message.type === 'error' ? 'error' : 'success'}`} style={{
+              padding: '10px',
+              marginBottom: '20px',
               backgroundColor: message.type === 'error' ? '#ffcccc' : '#ccffcc',
               border: '2px solid var(--border-color)',
               color: 'var(--text-color)'
@@ -169,11 +172,11 @@ const AddWord = () => {
             </div>
           )}
 
-                    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '15px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '15px' }}>
             <Select
               label={STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}
               value={form.categoryId}
-              onChange={(val) => setForm({...form, categoryId: val})}
+              onChange={(val) => setForm({ ...form, categoryId: val })}
               options={categories?.map(c => ({ value: c.id, label: c.name })) || []}
               required
               placeholder={STRINGS.VOCAB_CMS.VOCABULARY.SELECT_CATEGORY}
@@ -184,10 +187,10 @@ const AddWord = () => {
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FORM.WORD}</label>
               <small style={{ display: 'block', marginBottom: '5px', opacity: 0.7 }}>{STRINGS.VOCAB_CMS.VOCABULARY.HELPER.WORD_IN}{language.name}</small>
-              <input 
-                className="retro-input" 
+              <input
+                className="retro-input"
                 value={form.word}
-                onChange={e => setForm({...form, word: e.target.value})}
+                onChange={e => setForm({ ...form, word: e.target.value })}
                 required
                 style={{ width: '100%' }}
               />
@@ -197,16 +200,16 @@ const AddWord = () => {
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FORM.TRANSLATION}</label>
               <small style={{ display: 'block', marginBottom: '5px', opacity: 0.7 }}>{STRINGS.VOCAB_CMS.VOCABULARY.HELPER.MEANING_IN_ENGLISH}</small>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <input 
-                  className="retro-input" 
+                <input
+                  className="retro-input"
                   value={form.translation}
-                  onChange={e => setForm({...form, translation: e.target.value})}
+                  onChange={e => setForm({ ...form, translation: e.target.value })}
                   required
                   style={{ width: '100%', flex: 1 }}
                 />
-                <button 
-                  type="button" 
-                  className="retro-btn secondary" 
+                <button
+                  type="button"
+                  className="retro-btn secondary"
                   onClick={handleReverseTranslate}
                   disabled={isTranslating || !form.translation}
                   style={{ padding: '0 15px', fontSize: '0.9em' }}
@@ -218,20 +221,20 @@ const AddWord = () => {
 
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FORM.PRONUNCIATION}</label>
-              <input 
-                className="retro-input" 
+              <input
+                className="retro-input"
                 value={form.pronunciation}
-                onChange={e => setForm({...form, pronunciation: e.target.value})}
+                onChange={e => setForm({ ...form, pronunciation: e.target.value })}
                 style={{ width: '100%' }}
               />
             </div>
 
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FORM.EXAMPLE}</label>
-              <textarea 
-                className="retro-input" 
+              <textarea
+                className="retro-input"
                 value={form.exampleSentence}
-                onChange={e => setForm({...form, exampleSentence: e.target.value})}
+                onChange={e => setForm({ ...form, exampleSentence: e.target.value })}
                 style={{ width: '100%', minHeight: '80px', fontFamily: 'inherit' }}
               />
             </div>

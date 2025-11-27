@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import Select from '../components/Select';
 import { useGet, usePost } from '../hooks/useApi';
+import { useAuth } from '../contexts/AuthContext';
 import { STRINGS } from '../constants/strings';
 import { ENDPOINTS } from '../constants/endpoints';
 
 const VocabCMS = () => {
+  const { dbUser } = useAuth();
   const [activeTab, setActiveTab] = useState('categories');
   const [filterLanguage, setFilterLanguage] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
@@ -64,7 +66,10 @@ const VocabCMS = () => {
   const handleVocabSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createVocab(ENDPOINTS.VOCABULARY.BASE, vocabForm);
+      await createVocab(ENDPOINTS.VOCABULARY.BASE, {
+        ...vocabForm,
+        createdBy: dbUser?.id
+      });
       setVocabForm({ 
         word: '', 
         translation: '', 
@@ -222,6 +227,7 @@ const VocabCMS = () => {
                     <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LANGUAGE}</th>
                     <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}</th>
                     <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LEVEL}</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CREATED_BY}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -236,6 +242,7 @@ const VocabCMS = () => {
                           {vocab.difficultyLevel}
                         </span>
                       </td>
+                      <td style={{ padding: '15px' }}>{vocab.creator?.displayName || 'Unknown'}</td>
                     </tr>
                   ))}
                 </tbody>

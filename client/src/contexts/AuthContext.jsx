@@ -13,6 +13,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [dbUser, setDbUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const { post: syncUser } = usePost();
 
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    setDbUser(null);
     return signOut(auth);
   };
 
@@ -31,15 +33,18 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         try {
           // Sync user with backend
-          await syncUser(ENDPOINTS.USERS.SYNC, {
+          const backendUser = await syncUser(ENDPOINTS.USERS.SYNC, {
             email: user.email,
             firebaseUid: user.uid,
             displayName: user.displayName,
             photoURL: user.photoURL
           });
+          setDbUser(backendUser);
         } catch (error) {
           console.error(STRINGS.LOGIN.ERROR_SYNC, error);
         }
+      } else {
+        setDbUser(null);
       }
 
       setLoading(false);
@@ -50,6 +55,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     currentUser,
+    dbUser,
     loginWithGoogle,
     logout
   };

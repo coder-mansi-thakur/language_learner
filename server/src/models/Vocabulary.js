@@ -30,6 +30,14 @@ const Vocabulary = sequelize.define('Vocabulary', {
   difficultyLevel: {
     type: DataTypes.ENUM('beginner', 'intermediate', 'advanced'),
     defaultValue: 'beginner',
+  },
+  createdBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Users',
+      key: 'id',
+    },
   }
 }, {
   timestamps: true,

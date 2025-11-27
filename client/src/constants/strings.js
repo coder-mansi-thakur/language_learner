@@ -125,6 +125,7 @@ export const STRINGS = {
         LANGUAGE: "Language",
         CATEGORY: "Category",
         LEVEL: "Level",
+        CREATED_BY: "Created By",
       },
       FILTERS: {
         LANGUAGE: "Filter by Language:",
