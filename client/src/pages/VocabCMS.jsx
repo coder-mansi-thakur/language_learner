@@ -5,9 +5,19 @@ import { STRINGS } from '../constants/strings';
 
 const VocabCMS = () => {
   const [activeTab, setActiveTab] = useState('categories');
+  const [filterLanguage, setFilterLanguage] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+
   const { data: categories, refetch: refetchCategories } = useGet('/categories');
   const { data: languages } = useGet('/languages');
-  const { data: vocabulary, refetch: refetchVocab } = useGet('/vocabulary');
+  
+  // Construct query string for vocabulary
+  const queryParams = new URLSearchParams();
+  if (filterLanguage) queryParams.append('languageId', filterLanguage);
+  if (filterCategory) queryParams.append('categoryId', filterCategory);
+  const vocabEndpoint = `/vocabulary?${queryParams.toString()}`;
+
+  const { data: vocabulary, refetch: refetchVocab } = useGet(vocabEndpoint);
   
   const { post: createCategory } = usePost();
   const { post: createVocab } = usePost();
@@ -158,17 +168,58 @@ const VocabCMS = () => {
               <button className="retro-btn" type="submit">Add Word</button>
             </form>
 
-            <div style={{ display: 'grid', gap: '10px' }}>
-              {vocabulary?.map(vocab => (
-                <div key={vocab.id} className="retro-window" style={{ padding: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                  <div>
-                    <strong>{vocab.word}</strong> - {vocab.translation}
-                  </div>
-                  <div style={{ fontSize: '12px', opacity: 0.7 }}>
-                    {vocab.Language?.name} | {vocab.Category?.name}
-                  </div>
-                </div>
-              ))}
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', padding: '15px', backgroundColor: 'var(--color-cream)', border: '2px solid var(--border-color)', borderRadius: '8px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Filter by Language:</label>
+                <select 
+                  className="retro-input"
+                  value={filterLanguage}
+                  onChange={e => setFilterLanguage(e.target.value)}
+                >
+                  <option value="">All Languages</option>
+                  {languages?.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Filter by Category:</label>
+                <select 
+                  className="retro-input"
+                  value={filterCategory}
+                  onChange={e => setFilterCategory(e.target.value)}
+                >
+                  <option value="">All Categories</option>
+                  {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="retro-window" style={{ padding: '0' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '3px solid var(--border-color)', backgroundColor: 'var(--color-cream-dark)' }}>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>Word</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>Translation</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>Language</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>Category</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>Level</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vocabulary?.map(vocab => (
+                    <tr key={vocab.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '15px', fontWeight: 'bold' }}>{vocab.word}</td>
+                      <td style={{ padding: '15px' }}>{vocab.translation}</td>
+                      <td style={{ padding: '15px' }}>{vocab.Language?.name}</td>
+                      <td style={{ padding: '15px' }}>{vocab.Category?.name}</td>
+                      <td style={{ padding: '15px' }}>
+                        <span className="retro-tag" style={{ textTransform: 'capitalize' }}>
+                          {vocab.difficultyLevel}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

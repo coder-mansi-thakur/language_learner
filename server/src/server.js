@@ -20,9 +20,11 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import vocabularyRoutes from './routes/vocabularyRoutes.js';
 import userVocabularyRoutes from './routes/userVocabularyRoutes.js';
 import { seedLanguages } from './utils/seedLanguages.js';
+import { seedVocabulary } from './utils/seedVocabulary.js';
 
-connectDB().then(() => {
-  seedLanguages();
+connectDB().then(async () => {
+  await seedLanguages();
+  await seedVocabulary();
 });
 
 // Routes
