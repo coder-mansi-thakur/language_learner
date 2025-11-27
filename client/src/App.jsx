@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import LanguageLearn from './pages/LanguageLearn';
 import Practice from './pages/Practice';
 import VocabCMS from './pages/VocabCMS';
+import AddWord from './pages/AddWord';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/learn/:code" element={<LanguageLearn />} />
+            <Route path="/add-word/:code" element={<AddWord />} />
             <Route path="/practice/:code" element={<Practice />} />
             <Route path="/admin/vocab" element={<VocabCMS />} />
             <Route path="/ui-components" element={<DesignSystem />} />

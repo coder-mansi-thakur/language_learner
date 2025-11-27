@@ -57,6 +57,9 @@ export const STRINGS = {
   },
   PRACTICE: {
     SESSION_COMPLETE: "Session Complete! 🎉",
+    ALL_MASTERED: "You're done for today! 🌟",
+    ALL_MASTERED_DESC: "You have mastered all available vocabulary for this language!",
+    ERROR_UPDATE_PROGRESS: "Failed to update progress",
     REVIEWED_COUNT: (count) => `You've reviewed ${count} words.`,
     PRACTICE_AGAIN: "Practice Again",
     NO_VOCAB: "No vocabulary found for this language yet.",
@@ -91,6 +94,17 @@ export const STRINGS = {
       PLACEHOLDER_WORD: "Word (Original)",
       PLACEHOLDER_TRANS: "Translation",
       ADD_BUTTON: "Add Word",
+      ADD_WORD: "Add Word",
+      ADD_WORD_DESC: "Add a new word to your vocabulary list.",
+      WORD_EXISTS: "This word already exists in the library!",
+      WORD_ADDED: "Word added successfully!",
+      FORM: {
+        WORD: "Word",
+        TRANSLATION: "Translation",
+        PRONUNCIATION: "Pronunciation (Optional)",
+        EXAMPLE: "Example Sentence (Optional)",
+        ADD_BTN: "Add to Library"
+      },
       TABLE: {
         WORD: "Word",
         TRANSLATION: "Translation",

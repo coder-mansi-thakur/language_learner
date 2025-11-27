@@ -29,6 +29,7 @@ const Practice = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
+  const [isDoneForToday, setIsDoneForToday] = useState(false);
 
   // Prepare the queue when data is ready
   useEffect(() => {
@@ -50,6 +51,11 @@ const Practice = () => {
       const due = combined.filter(w => w.userProgress?.status === 'learning' || w.userProgress?.status === 'review');
       const newWords = combined.filter(w => !w.userProgress);
       const mastered = combined.filter(w => w.userProgress?.status === 'mastered');
+
+      if (due.length === 0 && newWords.length === 0 && mastered.length > 0) {
+        setIsDoneForToday(true);
+        return;
+      }
 
       // Create a session queue: 5 due + 5 new + 2 mastered (example mix)
       // Shuffle helper
@@ -118,7 +124,7 @@ const Practice = () => {
         refetchProgress(); // Sync for next time
       }
     } catch (error) {
-      console.error("Failed to update progress", error);
+      console.error(STRINGS.PRACTICE.ERROR_UPDATE_PROGRESS, error);
     }
   };
 
@@ -127,6 +133,20 @@ const Practice = () => {
       <Layout>
         <div className="retro-container" style={{ textAlign: 'center' }}>
           <p>{STRINGS.DASHBOARD.LOADING}</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (isDoneForToday) {
+    return (
+      <Layout>
+        <div className="retro-container" style={{ textAlign: 'center' }}>
+          <div className="retro-card">
+            <h1>{STRINGS.PRACTICE.ALL_MASTERED}</h1>
+            <p>{STRINGS.PRACTICE.ALL_MASTERED_DESC}</p>
+            <button className="retro-btn" onClick={() => navigate('/dashboard')}>{STRINGS.PRACTICE.BACK_DASHBOARD}</button>
+          </div>
         </div>
       </Layout>
     );

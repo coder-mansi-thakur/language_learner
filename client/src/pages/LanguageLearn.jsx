@@ -54,8 +54,12 @@ const LanguageLearn = () => {
           </p>
           
           <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
-            <button className="retro-btn" style={{ fontSize: '18px', padding: '15px 30px' }}>
-              {STRINGS.LANGUAGE_LEARN.START_LESSON}
+            <button 
+              className="retro-btn" 
+              style={{ fontSize: '18px', padding: '15px 30px' }}
+              onClick={() => navigate(`/add-word/${code}`)}
+            >
+              {STRINGS.VOCAB_CMS.VOCABULARY.ADD_WORD}
             </button>
             <button 
               className="retro-btn secondary" 
