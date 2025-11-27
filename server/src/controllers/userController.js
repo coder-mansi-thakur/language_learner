@@ -1,31 +1,72 @@
 import User from '../models/User.js';
+import Language from '../models/Language.js';
+import UserLanguage from '../models/UserLanguage.js';
 
 export const syncUser = async (req, res) => {
   const { email, firebaseUid, displayName, photoURL } = req.body;
-
-  try {
-    let user = await User.findOne({ where: { email } });
-
-    if (user) {
-      // Update existing user with firebaseUid if not present
-      if (!user.firebaseUid) {
-        user.firebaseUid = firebaseUid;
-        await user.save();
-      }
-      return res.json(user);
-    }
-
-    // Create new user
-    user = await User.create({
-      email,
-      firebaseUid,
-      username: displayName || email.split('@')[0], // Fallback username
-      // photoURL could be added to model if needed
-    });
-
+// ...existing code...
     res.status(201).json(user);
   } catch (error) {
     console.error('Error syncing user:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+export const getUserProfile = async (req, res) => {
+  const { firebaseUid } = req.params;
+
+  try {
+    const user = await User.findOne({
+      where: { firebaseUid },
+      include: [
+        {
+          model: Language,
+          through: {
+            attributes: ['status', 'proficiency', 'xp'],
+          },
+        },
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+export const startLearning = async (req, res) => {
+  const { firebaseUid } = req.params;
+  const { languageId } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { firebaseUid } });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const [userLanguage, created] = await UserLanguage.findOrCreate({
+      where: {
+        userId: user.id,
+        languageId: languageId
+      },
+      defaults: {
+        status: 'learning',
+        proficiency: 'beginner',
+        xp: 0
+      }
+    });
+
+    if (!created) {
+        userLanguage.status = 'learning';
+        await userLanguage.save();
+    }
+
+    res.json(userLanguage);
+  } catch (error) {
+    console.error('Error starting learning:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 };

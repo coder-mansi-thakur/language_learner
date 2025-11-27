@@ -15,6 +15,7 @@ app.use(express.json());
 // Database Connection
 import './models/associations.js'; // Import associations to register models and relationships
 import userRoutes from './routes/userRoutes.js';
+import languageRoutes from './routes/languageRoutes.js';
 import { seedLanguages } from './utils/seedLanguages.js';
 
 connectDB().then(() => {
@@ -23,6 +24,7 @@ connectDB().then(() => {
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/languages', languageRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

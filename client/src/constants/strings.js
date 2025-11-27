@@ -28,6 +28,16 @@ export const STRINGS = {
     XP_EARNED: "XP Earned",
     LOGOUT_BUTTON: "Log Out",
   },
+  DASHBOARD: {
+    TITLE: "Dashboard",
+    LEARNING_COUNT: "Languages Learning",
+    NO_LANGUAGES: "You are not learning any languages yet.",
+    START_LEARNING: "Start Learning a Language",
+    LOADING: "Loading...",
+    ERROR_FETCHING_DATA: "Error fetching user data:",
+    SELECT_LANGUAGE: "Select a Language",
+    START_BUTTON: "Start",
+  },
   DESIGN_SYSTEM: {
     TITLE: "🎨 Retro UI Design System",
     SECTIONS: {

@@ -5,6 +5,7 @@ import DesignSystem from './pages/DesignSystem';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/ui-components" element={<DesignSystem />} />
           {/* Future routes will go here */}
         </Routes>

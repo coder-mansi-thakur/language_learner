@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider } from '../firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import axios from 'axios';
+import { usePost } from '../hooks/useApi';
 
 const AuthContext = createContext();
 
@@ -12,6 +12,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { post: syncUser } = usePost();
 
   const loginWithGoogle = () => {
     return signInWithPopup(auth, googleProvider);
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         try {
           // Sync user with backend
-          await axios.post('http://localhost:5000/api/users/sync', {
+          await syncUser('/users/sync', {
             email: user.email,
             firebaseUid: user.uid,
             displayName: user.displayName,
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     return unsubscribe;
-  }, []);
+  }, [syncUser]);
 
   const value = {
     currentUser,
