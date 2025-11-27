@@ -44,7 +44,13 @@ const LanguageLearn = () => {
           {STRINGS.LANGUAGE_LEARN.BACK}
         </button>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px', gap: '10px' }}>
+            <button 
+                className="retro-btn secondary" 
+                onClick={() => navigate(`/image-extractor/${code}`)}
+            >
+                Image to Text
+            </button>
             <button 
                 className="retro-btn secondary" 
                 onClick={() => navigate('/my-vocab')}

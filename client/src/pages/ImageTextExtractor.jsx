@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import Tesseract from 'tesseract.js';
 import Layout from '../components/Layout';
 import { translateText } from '../services/translationService';
 import { STRINGS } from '../constants/strings';
+import { useAuth } from '../contexts/AuthContext';
+import { useGet, usePost } from '../hooks/useApi';
+import { ENDPOINTS } from '../constants/endpoints';
 
 const ImageTextExtractor = () => {
+  const { code } = useParams();
+  const { dbUser } = useAuth();
+  const { post: createVocab } = usePost();
+  const { data: languages } = useGet(ENDPOINTS.LANGUAGES.GET_ALL);
+
   const [image, setImage] = useState(null);
   const [text, setText] = useState('');
   const [words, setWords] = useState([]);
@@ -14,6 +23,20 @@ const ImageTextExtractor = () => {
   const [translation, setTranslation] = useState('');
   const [translating, setTranslating] = useState(false);
   const [sourceLang, setSourceLang] = useState('kor');
+  const [addingToVocab, setAddingToVocab] = useState(false);
+  const [addMessage, setAddMessage] = useState('');
+
+  useEffect(() => {
+    if (code) {
+      // Map URL code to Tesseract/App code
+      // App codes: 'ko', 'hi', 'en' (assumed based on previous context)
+      // Tesseract codes: 'kor', 'hin', 'eng'
+      if (code === 'ko') setSourceLang('kor');
+      else if (code === 'hi') setSourceLang('hin');
+      else if (code === 'en') setSourceLang('eng');
+      // Add more mappings as needed
+    }
+  }, [code]);
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -65,6 +88,7 @@ const ImageTextExtractor = () => {
     setSelectedWord(word);
     setTranslation('');
     setTranslating(true);
+    setAddMessage('');
     try {
       // Map Tesseract lang to Translation API lang
       let sourceCode = 'en';
@@ -87,6 +111,56 @@ const ImageTextExtractor = () => {
     }
   };
 
+  const handleAddToVocab = async () => {
+    if (!dbUser) {
+      setAddMessage(STRINGS.IMAGE_EXTRACTOR.LOGIN_REQUIRED);
+      return;
+    }
+    
+    setAddingToVocab(true);
+    setAddMessage('');
+
+    try {
+      // Find language ID
+      let langCodeToFind = 'en';
+      if (sourceLang === 'kor') langCodeToFind = 'ko';
+      if (sourceLang === 'hin') langCodeToFind = 'hi';
+      
+      // Note: This assumes the languages in DB match these codes. 
+      // If not, we might need better mapping or fuzzy matching.
+      const language = languages?.find(l => l.code === langCodeToFind);
+      
+      if (!language) {
+        setAddMessage(STRINGS.IMAGE_EXTRACTOR.LANGUAGE_NOT_FOUND);
+        setAddingToVocab(false);
+        return;
+      }
+
+      // Use first category or a default one
+      const categoryId = null;
+
+      await createVocab(ENDPOINTS.VOCABULARY.BASE, {
+        word: selectedWord,
+        translation: translation,
+        difficultyLevel: 'beginner',
+        categoryId: categoryId,
+        languageId: language.id,
+        createdBy: dbUser.id
+      });
+
+      setAddMessage(STRINGS.IMAGE_EXTRACTOR.ADDED_SUCCESS);
+    } catch (error) {
+      console.error(error);
+      if (error.response && error.response.status === 409) {
+        setAddMessage(STRINGS.IMAGE_EXTRACTOR.ERROR_EXISTS);
+      } else {
+        setAddMessage(STRINGS.IMAGE_EXTRACTOR.ERROR_ADDING);
+      }
+    } finally {
+      setAddingToVocab(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="retro-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -94,16 +168,18 @@ const ImageTextExtractor = () => {
         
         <div className="retro-card">
           <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
-            <select 
-              value={sourceLang} 
-              onChange={(e) => setSourceLang(e.target.value)}
-              className="retro-input"
-              style={{ width: 'auto' }}
-            >
-              <option value="eng">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.ENGLISH}</option>
-              <option value="kor">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.KOREAN}</option>
-              <option value="hin">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.HINDI}</option>
-            </select>
+            {!code && (
+              <select 
+                value={sourceLang} 
+                onChange={(e) => setSourceLang(e.target.value)}
+                className="retro-input"
+                style={{ width: 'auto' }}
+              >
+                <option value="eng">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.ENGLISH}</option>
+                <option value="kor">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.KOREAN}</option>
+                <option value="hin">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.HINDI}</option>
+              </select>
+            )}
             <input 
               type="file" 
               accept="image/*" 
@@ -167,6 +243,28 @@ const ImageTextExtractor = () => {
               <strong>{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_LABEL}</strong> 
               {translating ? ` ${STRINGS.IMAGE_EXTRACTOR.LOADING}` : ` ${translation}`}
             </p>
+            
+            {!translating && translation && (
+              <div style={{ marginTop: '15px' }}>
+                <button 
+                  className="retro-btn secondary" 
+                  onClick={handleAddToVocab}
+                  disabled={addingToVocab}
+                  style={{ width: '100%' }}
+                >
+                  {addingToVocab ? STRINGS.IMAGE_EXTRACTOR.LOADING : STRINGS.IMAGE_EXTRACTOR.ADD_TO_VOCAB}
+                </button>
+                {addMessage && (
+                  <p style={{ 
+                    marginTop: '10px', 
+                    color: addMessage === STRINGS.IMAGE_EXTRACTOR.ADDED_SUCCESS ? 'green' : 'red',
+                    fontWeight: 'bold'
+                  }}>
+                    {addMessage}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

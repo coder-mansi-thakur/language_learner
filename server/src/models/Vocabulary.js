@@ -38,9 +38,23 @@ const Vocabulary = sequelize.define('Vocabulary', {
       model: 'Users',
       key: 'id',
     },
+  },
+  languageId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Languages',
+      key: 'id',
+    },
   }
 }, {
   timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['word', 'languageId', 'createdBy']
+    }
+  ]
 });
 
 export default Vocabulary;

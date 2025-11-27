@@ -55,6 +55,9 @@ export const createVocabulary = async (req, res) => {
     res.status(201).json(vocabulary);
   } catch (error) {
     console.error('Error creating vocabulary:', error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(409).json({ message: 'Word already exists for this language' });
+    }
     res.status(500).json({ message: 'Server Error' });
   }
 };

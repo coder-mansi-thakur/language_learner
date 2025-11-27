@@ -51,13 +51,7 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="retro-container">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px', gap: '10px' }}>
-            <button 
-                className="retro-btn secondary" 
-                onClick={() => navigate('/image-extractor')}
-            >
-                Image to Text
-            </button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
             <button 
                 className="retro-btn secondary" 
                 onClick={() => navigate('/my-vocab')}
@@ -77,10 +71,6 @@ const Dashboard = () => {
                     <span className="retro-tag" style={{ textTransform: 'capitalize' }}>{lang.UserLanguage.proficiency}</span>
                   </div>
                   <h3 style={{ margin: '0 0 10px 0' }}>{lang.name}</h3>
-                  <p style={{ margin: '0 0 5px 0', fontSize: '14px', opacity: 0.8 }}>{STRINGS.DASHBOARD.XP}: {lang.UserLanguage.xp}</p>
-                  <div style={{ marginBottom: '15px' }}>
-                    <ProgressBar value={lang.UserLanguage.xp} max={1000} />
-                  </div>
                   <button 
                     className="retro-btn" 
                     style={{ width: '100%' }}

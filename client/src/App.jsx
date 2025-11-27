@@ -29,6 +29,7 @@ function App() {
             <Route path="/practice/:code" element={<Practice />} />
             <Route path="/my-vocab" element={<MyVocabulary />} />
             <Route path="/image-extractor" element={<ImageTextExtractor />} />
+            <Route path="/image-extractor/:code" element={<ImageTextExtractor />} />
             <Route path="/admin/vocab" element={<VocabCMS />} />
             <Route path="/ui-components" element={<DesignSystem />} />
             {/* Future routes will go here */}
