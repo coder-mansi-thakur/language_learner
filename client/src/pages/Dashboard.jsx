@@ -53,20 +53,6 @@ const Dashboard = () => {
         
         {learningLanguages.length > 0 && (
           <>
-            <div className="retro-card" style={{ marginBottom: '40px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <h2 style={{ margin: 0 }}>{STRINGS.DASHBOARD.LEARNING_COUNT}</h2>
-                  <p style={{ fontSize: '48px', fontWeight: 'bold', margin: '10px 0' }}>
-                    {learningLanguages.length}
-                  </p>
-                </div>
-                <div style={{ fontSize: '64px' }}>
-                  📚
-                </div>
-              </div>
-            </div>
-
             <h2 style={{ marginBottom: '20px' }}>{STRINGS.DASHBOARD.MY_LANGUAGES}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px', marginBottom: '40px' }}>
               {learningLanguages.map(lang => (
