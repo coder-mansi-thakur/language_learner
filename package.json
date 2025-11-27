@@ -1,8 +1,10 @@
 {
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.17"
+  "scripts": {
+    "start": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "install-all": "npm install && npm install --prefix client && npm install --prefix server"
   },
-  "dependencies": {
-    "firebase": "^12.6.0"
-  }
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {}
 }
