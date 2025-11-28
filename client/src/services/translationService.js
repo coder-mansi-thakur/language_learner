@@ -1,9 +1,8 @@
 /**
- * Service to handle text translation using MyMemory API
- * https://mymemory.translated.net/doc/spec.php
+ * Service to handle text translation using Google Translate API
  */
 
-const API_BASE_URL = 'https://api.mymemory.translated.net/get';
+const API_BASE_URL = 'https://translate.googleapis.com/translate_a/single';
 
 /**
  * Translates text from source language to target language
@@ -16,16 +15,15 @@ export const translateText = async (text, from, to) => {
   if (!text) return '';
   
   try {
-    const langPair = `${from}|${to}`;
-    const url = `${API_BASE_URL}?q=${encodeURIComponent(text)}&langpair=${langPair}`;
+    const url = `${API_BASE_URL}?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
     
     const response = await fetch(url);
     const data = await response.json();
     
-    if (data.responseStatus === 200) {
-      return data.responseData.translatedText;
+    if (data && data[0] && data[0][0] && data[0][0][0]) {
+      return data[0][0][0];
     } else {
-      throw new Error(data.responseDetails || 'Translation failed');
+      throw new Error('Translation failed');
     }
   } catch (error) {
     console.error('Translation error:', error);
