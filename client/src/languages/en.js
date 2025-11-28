@@ -209,6 +209,7 @@ export const STRINGS = {
     METHODS: {
       TESSERACT: "Tesseract (Local)",
       GOOGLE_AI: "Google AI (Cloud)",
+      OCR_SPACE: "OCR.space API",
     },
     ADD_TO_VOCAB: "Add to Vocabulary",
     ADDED_SUCCESS: "Added to Vocabulary!",

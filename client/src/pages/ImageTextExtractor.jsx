@@ -107,6 +107,50 @@ const ImageTextExtractor = () => {
     setLoading(false);
   };
 
+  const extractTextWithOCRSpace = async () => {
+    try {
+      const apiKey = import.meta.env.VITE_OCR_SPACE_API_KEY;
+      if (!apiKey) {
+        alert("OCR.space API Key is missing. Please add VITE_OCR_SPACE_API_KEY to your .env file.");
+        setLoading(false);
+        return;
+      }
+
+      const formData = new FormData();
+      
+      // Convert blob URL to File object
+      const response = await fetch(image);
+      const blob = await response.blob();
+      formData.append('file', blob, 'image.png');
+      formData.append('apikey', apiKey);
+      formData.append('language', sourceLang === 'kor' ? 'kor' : sourceLang === 'hin' ? 'hin' : 'eng');
+      formData.append('isOverlayRequired', 'false');
+
+      const apiResponse = await fetch('https://api.ocr.space/parse/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await apiResponse.json();
+
+      if (data.IsErroredOnProcessing) {
+        console.error("OCR.space Error:", data.ErrorMessage);
+        setLoading(false);
+        return;
+      }
+
+      if (data.ParsedResults && data.ParsedResults.length > 0) {
+        const text = data.ParsedResults[0].ParsedText;
+        processExtractedText(text);
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("OCR.space Error:", error);
+      setLoading(false);
+    }
+  };
+
   const extractText = () => {
     if (!image) return;
 
@@ -115,6 +159,9 @@ const ImageTextExtractor = () => {
 
     if (ocrMethod === 'google') {
       extractTextWithGoogleAI();
+      return;
+    } else if (ocrMethod === 'ocr_space') {
+      extractTextWithOCRSpace();
       return;
     }
 
@@ -232,6 +279,7 @@ const ImageTextExtractor = () => {
               >
                 <option value="tesseract">{STRINGS.IMAGE_EXTRACTOR.METHODS.TESSERACT}</option>
                 <option value="google">{STRINGS.IMAGE_EXTRACTOR.METHODS.GOOGLE_AI}</option>
+                <option value="ocr_space">{STRINGS.IMAGE_EXTRACTOR.METHODS.OCR_SPACE}</option>
               </select>
             </div>
 
