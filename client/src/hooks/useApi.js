@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { config } from '../config/development';
+import { config } from '../config/api';
 
 export const useGet = (endpoint, options = {}) => {
   const { enabled = true } = options;
