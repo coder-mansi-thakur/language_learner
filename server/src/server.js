@@ -19,6 +19,7 @@ import languageRoutes from './routes/languageRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import vocabularyRoutes from './routes/vocabularyRoutes.js';
 import userVocabularyRoutes from './routes/userVocabularyRoutes.js';
+import habitRoutes from './routes/habitRoutes.js';
 import { seedLanguages } from './utils/seedLanguages.js';
 import { seedVocabulary } from './utils/seedVocabulary.js';
 
@@ -33,6 +34,7 @@ app.use('/api/languages', languageRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/vocabulary', vocabularyRoutes);
 app.use('/api/user-vocabulary', userVocabularyRoutes);
+app.use('/api/habits', habitRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

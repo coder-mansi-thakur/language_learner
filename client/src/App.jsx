@@ -13,6 +13,7 @@ import VocabCMS from './pages/VocabCMS';
 import AddWord from './pages/AddWord';
 import MyVocabulary from './pages/MyVocabulary';
 import ImageTextExtractor from './pages/ImageTextExtractor';
+import HabitTracker from './pages/HabitTracker';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/habits" element={<HabitTracker />} />
             <Route path="/learn/:code" element={<LanguageLearn />} />
             <Route path="/add-word/:code" element={<AddWord />} />
             <Route path="/practice/:code" element={<Practice />} />
