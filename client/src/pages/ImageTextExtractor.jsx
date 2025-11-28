@@ -70,12 +70,16 @@ const ImageTextExtractor = () => {
         reader.readAsDataURL(blob);
         reader.onloadend = () => resolve(reader.result);
       });
-      
+
       const base64Image = base64Data.split(',')[1];
       const mimeType = base64Data.split(';')[0].split(':')[1];
 
-      const prompt = `Extract all text from this image. Return only the extracted text. The language is likely ${sourceLang}.`;
-      
+      const prompt = `Extract all text from this image. The language is likely ${sourceLang}.
+       Return a JSON object with two keys: "text" containing the full extracted text, and "words" containing an array of unique words found in the text.
+        Return only the JSON string, no markdown formatting.
+        And return in ${sourceLang} language words only. Just the vocab words without any grammar or punctuation.
+        `;
+
       const result = await model.generateContent([
         prompt,
         {
@@ -85,9 +89,21 @@ const ImageTextExtractor = () => {
           }
         }
       ]);
-      
-      const text = result.response.text();
-      processExtractedText(text);
+
+      const responseText = result.response.text();
+
+      try {
+        // Clean up potential markdown code blocks if the model adds them
+        const cleanJson = responseText.replace(/```json|```/g, '').trim();
+        const data = JSON.parse(cleanJson);
+
+        setText(data.text);
+        setWords(data.words);
+        setLoading(false);
+      } catch (e) {
+        console.warn("Failed to parse Google AI response as JSON, falling back to text processing", e);
+        processExtractedText(responseText);
+      }
     } catch (error) {
       console.error("Google AI Error:", error);
       setLoading(false);
@@ -102,7 +118,7 @@ const ImageTextExtractor = () => {
       .map(w => w.replace(/[^\w\s\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u0900-\u097F]|_/g, "").trim())
       .filter(w => w.length > 0);
     console.log("🚀 ~ extractText ~ foundWords:", foundWords, text)
-    
+
     // Remove duplicates
     setWords([...new Set(foundWords)]);
     setLoading(false);
@@ -118,7 +134,7 @@ const ImageTextExtractor = () => {
       }
 
       const formData = new FormData();
-      
+
       // Convert blob URL to File object
       const response = await fetch(image);
       const blob = await response.blob();
@@ -203,8 +219,8 @@ const ImageTextExtractor = () => {
         sourceCode = 'hi';
         targetCode = 'en';
       }
-      
-      const result = await translateText(word, sourceCode, targetCode); 
+
+      const result = await translateText(word, sourceCode, targetCode);
       setTranslation(result);
     } catch (error) {
       setTranslation(STRINGS.IMAGE_EXTRACTOR.ERROR_TRANSLATING);
@@ -218,7 +234,7 @@ const ImageTextExtractor = () => {
       setAddMessage(STRINGS.IMAGE_EXTRACTOR.LOGIN_REQUIRED);
       return;
     }
-    
+
     setAddingToVocab(true);
     setAddMessage('');
 
@@ -227,11 +243,11 @@ const ImageTextExtractor = () => {
       let langCodeToFind = 'en';
       if (sourceLang === 'kor') langCodeToFind = 'ko';
       if (sourceLang === 'hin') langCodeToFind = 'hi';
-      
+
       // Note: This assumes the languages in DB match these codes. 
       // If not, we might need better mapping or fuzzy matching.
       const language = languages?.find(l => l.code === langCodeToFind);
-      
+
       if (!language) {
         setAddMessage(STRINGS.IMAGE_EXTRACTOR.LANGUAGE_NOT_FOUND);
         setAddingToVocab(false);
@@ -267,13 +283,13 @@ const ImageTextExtractor = () => {
     <Layout>
       <div className="retro-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
         <h1 className="retro-title">{STRINGS.IMAGE_EXTRACTOR.TITLE}</h1>
-        
+
         <div className="retro-card">
           <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <label style={{ fontWeight: 'bold' }}>{STRINGS.IMAGE_EXTRACTOR.OCR_METHOD}</label>
-              <select 
-                value={ocrMethod} 
+              <select
+                value={ocrMethod}
                 onChange={(e) => setOcrMethod(e.target.value)}
                 className="retro-input"
                 style={{ width: 'auto' }}
@@ -285,39 +301,39 @@ const ImageTextExtractor = () => {
             </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>
-            {!code && (
-              <select 
-                value={sourceLang} 
-                onChange={(e) => setSourceLang(e.target.value)}
+              {!code && (
+                <select
+                  value={sourceLang}
+                  onChange={(e) => setSourceLang(e.target.value)}
+                  className="retro-input"
+                  style={{ width: 'auto' }}
+                >
+                  <option value="eng">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.ENGLISH}</option>
+                  <option value="kor">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.KOREAN}</option>
+                  <option value="hin">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.HINDI}</option>
+                </select>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
                 className="retro-input"
-                style={{ width: 'auto' }}
-              >
-                <option value="eng">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.ENGLISH}</option>
-                <option value="kor">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.KOREAN}</option>
-                <option value="hin">{STRINGS.IMAGE_EXTRACTOR.LANGUAGES.HINDI}</option>
-              </select>
-            )}
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={handleImageChange} 
-              className="retro-input"
-            />
+              />
             </div>
           </div>
 
           {image && (
             <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-              <img 
-                src={image} 
-                alt="Preview" 
-                style={{ maxWidth: '100%', maxHeight: '300px', border: '2px solid var(--border-color)' }} 
+              <img
+                src={image}
+                alt="Preview"
+                style={{ maxWidth: '100%', maxHeight: '300px', border: '2px solid var(--border-color)' }}
               />
             </div>
           )}
 
-          <button 
-            onClick={extractText} 
+          <button
+            onClick={extractText}
             disabled={!image || loading}
             className="retro-btn primary"
             style={{ width: '100%' }}
@@ -330,16 +346,16 @@ const ImageTextExtractor = () => {
           <div className="retro-card" style={{ marginTop: '20px' }}>
             <h2 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.EXTRACTED_TITLE}</h2>
             <p style={{ whiteSpace: 'pre-wrap', marginBottom: '20px' }}>{text}</p>
-            
+
             <h3 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.FOUND_WORDS_TITLE}</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {words.map((word, index) => (
-                <span 
-                  key={index} 
+                <span
+                  key={index}
                   onClick={() => handleWordClick(word)}
-                  style={{ 
-                    cursor: 'pointer', 
-                    padding: '5px 10px', 
+                  style={{
+                    cursor: 'pointer',
+                    padding: '5px 10px',
                     backgroundColor: selectedWord === word ? 'var(--color-orange)' : 'var(--color-white)',
                     color: selectedWord === word ? 'var(--color-white)' : 'var(--text-main)',
                     border: '1px solid var(--border-color)',
@@ -358,14 +374,14 @@ const ImageTextExtractor = () => {
             <h3 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_TITLE}</h3>
             <p><strong>{STRINGS.IMAGE_EXTRACTOR.WORD_LABEL}</strong> {selectedWord}</p>
             <p>
-              <strong>{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_LABEL}</strong> 
+              <strong>{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_LABEL}</strong>
               {translating ? ` ${STRINGS.IMAGE_EXTRACTOR.LOADING}` : ` ${translation}`}
             </p>
-            
+
             {!translating && translation && (
               <div style={{ marginTop: '15px' }}>
-                <button 
-                  className="retro-btn secondary" 
+                <button
+                  className="retro-btn secondary"
                   onClick={handleAddToVocab}
                   disabled={addingToVocab}
                   style={{ width: '100%' }}
@@ -373,8 +389,8 @@ const ImageTextExtractor = () => {
                   {addingToVocab ? STRINGS.IMAGE_EXTRACTOR.LOADING : STRINGS.IMAGE_EXTRACTOR.ADD_TO_VOCAB}
                 </button>
                 {addMessage && (
-                  <p style={{ 
-                    marginTop: '10px', 
+                  <p style={{
+                    marginTop: '10px',
                     color: addMessage === STRINGS.IMAGE_EXTRACTOR.ADDED_SUCCESS ? 'green' : 'red',
                     fontWeight: 'bold'
                   }}>
