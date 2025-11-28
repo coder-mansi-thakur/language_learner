@@ -205,6 +205,11 @@ export const STRINGS = {
       KOREAN: "Korean",
       HINDI: "Hindi",
     },
+    OCR_METHOD: "OCR Method:",
+    METHODS: {
+      TESSERACT: "Tesseract (Local)",
+      GOOGLE_AI: "Google AI (Cloud)",
+    },
     ADD_TO_VOCAB: "Add to Vocabulary",
     ADDED_SUCCESS: "Added to Vocabulary!",
     ERROR_ADDING: "Error adding to Vocabulary",

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Tesseract from 'tesseract.js';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import Layout from '../components/Layout';
 import { translateText } from '../services/translationService';
 import { STRINGS } from '../constants/strings';
@@ -23,6 +24,7 @@ const ImageTextExtractor = () => {
   const [translation, setTranslation] = useState('');
   const [translating, setTranslating] = useState(false);
   const [sourceLang, setSourceLang] = useState('kor');
+  const [ocrMethod, setOcrMethod] = useState('tesseract');
   const [addingToVocab, setAddingToVocab] = useState(false);
   const [addMessage, setAddMessage] = useState('');
 
@@ -48,11 +50,73 @@ const ImageTextExtractor = () => {
     }
   };
 
+  const extractTextWithGoogleAI = async () => {
+    try {
+      const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+      if (!apiKey) {
+        alert("Google AI API Key is missing. Please add VITE_GOOGLE_AI_API_KEY to your .env file.");
+        setLoading(false);
+        return;
+      }
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const response = await fetch(image);
+      const blob = await response.blob();
+      const base64Data = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => resolve(reader.result);
+      });
+      
+      const base64Image = base64Data.split(',')[1];
+      const mimeType = base64Data.split(';')[0].split(':')[1];
+
+      const prompt = `Extract all text from this image. Return only the extracted text. The language is likely ${sourceLang}.`;
+      
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: base64Image,
+            mimeType: mimeType
+          }
+        }
+      ]);
+      
+      const text = result.response.text();
+      processExtractedText(text);
+    } catch (error) {
+      console.error("Google AI Error:", error);
+      setLoading(false);
+    }
+  };
+
+  const processExtractedText = (text) => {
+    setText(text);
+    // Simple tokenization: split by whitespace and remove punctuation
+    const foundWords = text
+      .split(/\s+/)
+      .map(w => w.replace(/[^\w\s\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u0900-\u097F]|_/g, "").trim())
+      .filter(w => w.length > 0);
+    console.log("🚀 ~ extractText ~ foundWords:", foundWords, text)
+    
+    // Remove duplicates
+    setWords([...new Set(foundWords)]);
+    setLoading(false);
+  };
+
   const extractText = () => {
     if (!image) return;
 
     setLoading(true);
     setProgress(0);
+
+    if (ocrMethod === 'google') {
+      extractTextWithGoogleAI();
+      return;
+    }
 
     Tesseract.recognize(
       image,
@@ -66,17 +130,7 @@ const ImageTextExtractor = () => {
       }
     )
       .then(({ data: { text } }) => {
-        setText(text);
-        // Simple tokenization: split by whitespace and remove punctuation
-        const foundWords = text
-          .split(/\s+/)
-          .map(w => w.replace(/[^\w\s\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u0900-\u097F]|_/g, "").trim())
-          .filter(w => w.length > 0);
-        console.log("🚀 ~ extractText ~ foundWords:", foundWords, text)
-        
-        // Remove duplicates
-        setWords([...new Set(foundWords)]);
-        setLoading(false);
+        processExtractedText(text);
       })
       .catch((err) => {
         console.error(err);
@@ -167,7 +221,21 @@ const ImageTextExtractor = () => {
         <h1 className="retro-title">{STRINGS.IMAGE_EXTRACTOR.TITLE}</h1>
         
         <div className="retro-card">
-          <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+          <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <label style={{ fontWeight: 'bold' }}>{STRINGS.IMAGE_EXTRACTOR.OCR_METHOD}</label>
+              <select 
+                value={ocrMethod} 
+                onChange={(e) => setOcrMethod(e.target.value)}
+                className="retro-input"
+                style={{ width: 'auto' }}
+              >
+                <option value="tesseract">{STRINGS.IMAGE_EXTRACTOR.METHODS.TESSERACT}</option>
+                <option value="google">{STRINGS.IMAGE_EXTRACTOR.METHODS.GOOGLE_AI}</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
             {!code && (
               <select 
                 value={sourceLang} 
@@ -186,6 +254,7 @@ const ImageTextExtractor = () => {
               onChange={handleImageChange} 
               className="retro-input"
             />
+            </div>
           </div>
 
           {image && (
