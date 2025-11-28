@@ -7,7 +7,7 @@ export const getUserVocabulary = async (req, res) => {
   const { languageId } = req.query;
 
   try {
-    const user = await User.findOne({ where: { firebaseUid } });
+    const user = await User.findOne({ where: { id:firebaseUid } });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const whereClause = { userId: user.id };
@@ -23,6 +23,30 @@ export const getUserVocabulary = async (req, res) => {
         }
       ]
     });
+
+    const createdVocab = await Vocabulary.findAll({
+      where: {
+        createdBy: user.id,
+        ...(languageId ? { languageId } : {})
+      }
+    });
+
+    const existingVocabIds = new Set(userVocab.map(uv => uv.vocabularyId));
+
+    for (const vocab of createdVocab) {
+      if (!existingVocabIds.has(vocab.id)) {
+        userVocab.push({
+          id: null,
+          userId: user.id,
+          vocabularyId: vocab.id,
+          status: 'new',
+          strength: 0,
+          nextReviewDate: null,
+          lastReviewed: null,
+          Vocabulary: vocab
+        });
+      }
+    }
 
     res.json(userVocab);
   } catch (error) {

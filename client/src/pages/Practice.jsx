@@ -9,19 +9,14 @@ import { ENDPOINTS } from '../constants/endpoints';
 const Practice = () => {
   const { code } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, dbUser } = useAuth();
   
   // 1. Fetch Language Details
   const { data: language } = useGet(ENDPOINTS.LANGUAGES.GET_BY_CODE(code));
   
-  // 2. Fetch All Vocabulary for this Language
-  // We need the language ID first, so we wait for language data
-  const vocabEndpoint = language ? `${ENDPOINTS.VOCABULARY.BASE}?languageId=${language.id}` : null;
-  const { data: allVocab, loading: loadingVocab } = useGet(vocabEndpoint, { enabled: !!language });
-
-  // 3. Fetch User's Progress
-  const userVocabEndpoint = currentUser && language ? `${ENDPOINTS.USER_VOCABULARY.GET_BY_USER(currentUser.uid)}?languageId=${language.id}` : null;
-  const { data: userProgress, refetch: refetchProgress } = useGet(userVocabEndpoint, { enabled: !!currentUser && !!language });
+  // 2. Fetch User's Progress (which includes Vocabulary details)
+  const userVocabEndpoint = currentUser && language ? `${ENDPOINTS.USER_VOCABULARY.GET_BY_USER(dbUser.id)}?languageId=${language.id}` : null;
+  const { data: userProgress, loading: loadingUserProgress, refetch: refetchProgress } = useGet(userVocabEndpoint, { enabled: !!currentUser && !!language });
 
   const { post: updateProgress } = usePost();
 
@@ -33,38 +28,34 @@ const Practice = () => {
 
   // Prepare the queue when data is ready
   useEffect(() => {
-    if (allVocab && userProgress) {
-      // Map progress to vocab
-      const progressMap = new Map(userProgress.map(up => [up.vocabularyId, up]));
-      
-      const combined = allVocab.map(word => ({
-        ...word,
-        userProgress: progressMap.get(word.id) || null
+    if (userProgress) {
+      // Transform userProgress to the expected format
+      // userProgress is an array of UserVocabulary objects which include the Vocabulary model
+      const combined = userProgress.map(up => ({
+        ...up.Vocabulary,
+        userProgress: up
       }));
 
       // Simple Spaced Repetition Logic (Mock)
       // Prioritize: 
       // 1. Words due for review (mocked as 'learning' or 'review')
-      // 2. New words (no progress)
-      // 3. Mastered words (less frequent)
+      // 2. Mastered words (less frequent)
       
       const due = combined.filter(w => w.userProgress?.status === 'learning' || w.userProgress?.status === 'review');
-      const newWords = combined.filter(w => !w.userProgress);
       const mastered = combined.filter(w => w.userProgress?.status === 'mastered');
 
-      if (due.length === 0 && newWords.length === 0 && mastered.length > 0) {
+      if (due.length === 0 && mastered.length > 0) {
         setIsDoneForToday(true);
         return;
       }
 
-      // Create a session queue: 5 due + 5 new + 2 mastered (example mix)
+      // Create a session queue: 10 due + 5 mastered
       // Shuffle helper
       const shuffle = (array) => array.sort(() => Math.random() - 0.5);
 
       const sessionQueue = [
-        ...shuffle(due).slice(0, 5),
-        ...shuffle(newWords).slice(0, 5),
-        ...shuffle(mastered).slice(0, 2)
+        ...shuffle(due).slice(0, 10),
+        ...shuffle(mastered).slice(0, 5)
       ];
 
       // If queue is empty (e.g. no words), just show all shuffled
@@ -74,7 +65,7 @@ const Practice = () => {
         setQueue(sessionQueue);
       }
     }
-  }, [allVocab, userProgress]);
+  }, [userProgress]);
 
   const currentCard = queue[currentIndex];
 
@@ -128,7 +119,7 @@ const Practice = () => {
     }
   };
 
-  if (loadingVocab || !language) {
+  if (loadingUserProgress || !language) {
     return (
       <Layout>
         <div className="retro-container" style={{ textAlign: 'center' }}>
