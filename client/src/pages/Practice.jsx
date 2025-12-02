@@ -26,24 +26,23 @@ const Practice = () => {
   const [sessionComplete, setSessionComplete] = useState(false);
   const [isDoneForToday, setIsDoneForToday] = useState(false);
 
+  const { due, mastered, combined } = useMemo(() => {
+    if (!userProgress) return { due: [], mastered: [], combined: [] };
+    
+    const combined = userProgress.map(up => ({
+      ...up.Vocabulary,
+      userProgress: up
+    }));
+
+    const due = combined.filter(w => w.userProgress?.status === 'learning' || w.userProgress?.status === 'review' || w.userProgress?.nextReviewDate === null || new Date(w.userProgress?.nextReviewDate) <= new Date()|| w.userProgress?.status === 'new');
+    const mastered = combined.filter(w => w.userProgress?.status === 'mastered');
+    
+    return { due, mastered, combined };
+  }, [userProgress]);
+
   // Prepare the queue when data is ready
   useEffect(() => {
     if (userProgress) {
-      // Transform userProgress to the expected format
-      // userProgress is an array of UserVocabulary objects which include the Vocabulary model
-      const combined = userProgress.map(up => ({
-        ...up.Vocabulary,
-        userProgress: up
-      }));
-
-      // Simple Spaced Repetition Logic (Mock)
-      // Prioritize: 
-      // 1. Words due for review (mocked as 'learning' or 'review')
-      // 2. Mastered words (less frequent)
-      
-      const due = combined.filter(w => w.userProgress?.status === 'learning' || w.userProgress?.status === 'review');
-      const mastered = combined.filter(w => w.userProgress?.status === 'mastered');
-
       if (due.length === 0 && mastered.length > 0) {
         setIsDoneForToday(true);
         return;
@@ -65,7 +64,22 @@ const Practice = () => {
         setQueue(sessionQueue);
       }
     }
-  }, [userProgress]);
+  }, [userProgress, due, mastered, combined]);
+
+  const handlePracticeRest = () => {
+    const shuffle = (array) => array.sort(() => Math.random() - 0.5);
+    // Practice rest of the cards (mastered ones)
+    // Let's take up to 20 mastered cards
+    const restQueue = shuffle(mastered).slice(0, 20);
+    
+    if (restQueue.length > 0) {
+      setQueue(restQueue);
+      setIsDoneForToday(false);
+      setSessionComplete(false);
+      setCurrentIndex(0);
+      setIsFlipped(false);
+    }
+  };
 
   const currentCard = queue[currentIndex];
 
@@ -137,6 +151,7 @@ const Practice = () => {
             <h1>{STRINGS.PRACTICE.ALL_MASTERED}</h1>
             <p>{STRINGS.PRACTICE.ALL_MASTERED_DESC}</p>
             <button className="retro-btn" onClick={() => navigate('/dashboard')}>{STRINGS.PRACTICE.BACK_DASHBOARD}</button>
+            <button className="retro-btn secondary" onClick={handlePracticeRest} style={{ marginLeft: '10px' }}>{STRINGS.PRACTICE.PRACTICE_REST}</button>
           </div>
         </div>
       </Layout>

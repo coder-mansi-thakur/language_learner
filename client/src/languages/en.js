@@ -62,6 +62,7 @@ export const STRINGS = {
     ERROR_UPDATE_PROGRESS: "Failed to update progress",
     REVIEWED_COUNT: (count) => `You've reviewed ${count} words.`,
     PRACTICE_AGAIN: "Practice Again",
+    PRACTICE_REST: "Practice Rest",
     NO_VOCAB: "No vocabulary found for this language yet.",
     EXIT: "Exit",
     TRANSLATION: "Translation",
