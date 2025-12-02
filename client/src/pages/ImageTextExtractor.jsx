@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Tesseract from 'tesseract.js';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Layout from '../components/Layout';
@@ -11,6 +11,7 @@ import { ENDPOINTS } from '../constants/endpoints';
 
 const ImageTextExtractor = () => {
   const { code } = useParams();
+  const navigate = useNavigate();
   const { dbUser } = useAuth();
   const { post: createVocab } = usePost();
   const { data: languages } = useGet(ENDPOINTS.LANGUAGES.GET_ALL);
@@ -335,6 +336,13 @@ const ImageTextExtractor = () => {
   return (
     <Layout>
       <div className="retro-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <button 
+          className="retro-btn secondary small" 
+          onClick={() => navigate(-1)}
+          style={{ marginBottom: '20px' }}
+        >
+          {STRINGS.LANGUAGE_LEARN.BACK}
+        </button>
         <h1 className="retro-title">{STRINGS.IMAGE_EXTRACTOR.TITLE}</h1>
 
         <div className="retro-card">
