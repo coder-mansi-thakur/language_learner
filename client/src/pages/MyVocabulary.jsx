@@ -41,6 +41,15 @@ const MyVocabulary = () => {
   const { del: deleteVocab } = useDelete();
   const { post: createCategory } = usePost();
 
+  const sortedVocabulary = React.useMemo(() => {
+    if (!vocabulary) return [];
+    return [...vocabulary].sort((a, b) => {
+        const strengthA = a.UserVocabularies?.[0]?.strength || 0;
+        const strengthB = b.UserVocabularies?.[0]?.strength || 0;
+        return strengthA - strengthB;
+    });
+  }, [vocabulary]);
+
   const handleEdit = (vocab) => {
     setEditingVocabId(vocab.id);
     setVocabForm({
@@ -124,6 +133,13 @@ const MyVocabulary = () => {
         >
           {STRINGS.LANGUAGE_LEARN.BACK}
         </button>
+        <button 
+          className="retro-btn" 
+          onClick={() => navigate(`/practice/${code}`)}
+          style={{ marginBottom: '20px', marginLeft: '10px' }}
+        >
+          Start Practice
+        </button>
 
         <h1 style={{ marginBottom: '20px' }}>My Vocabulary</h1>
         
@@ -205,7 +221,6 @@ const MyVocabulary = () => {
                     <tr style={{ borderBottom: '3px solid var(--border-color)', backgroundColor: 'var(--color-cream-dark)' }}>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.WORD}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.TRANSLATION}</th>
-                        <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LANGUAGE}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LEVEL}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>Mastery</th>
@@ -214,15 +229,14 @@ const MyVocabulary = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {vocabulary?.length > 0 ? (
-                        vocabulary.map(vocab => {
+                    {sortedVocabulary?.length > 0 ? (
+                        sortedVocabulary.map(vocab => {
                             const progress = vocab.UserVocabularies?.[0]?.strength || 0;
                             const nextReview = vocab.UserVocabularies?.[0]?.nextReviewDate;
                             return (
                             <tr key={vocab.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                             <td style={{ padding: '15px', fontWeight: 'bold' }}>{vocab.word}</td>
                             <td style={{ padding: '15px' }}>{vocab.translation}</td>
-                            <td style={{ padding: '15px' }}>{vocab.Language?.name}</td>
                             <td style={{ padding: '15px' }}>{vocab.Category?.name}</td>
                             <td style={{ padding: '15px' }}>
                                 <span className="retro-tag" style={{ textTransform: 'capitalize' }}>
@@ -237,18 +251,18 @@ const MyVocabulary = () => {
                             </td>
                             <td style={{ padding: '15px' }}>
                                 <button 
-                                  className="retro-btn secondary" 
-                                  style={{ padding: '5px 10px', fontSize: '12px', marginRight: '5px' }}
+                                  title={STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.EDIT}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', marginRight: '10px' }}
                                   onClick={() => handleEdit(vocab)}
                                 >
-                                  {STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.EDIT}
+                                  ✏️
                                 </button>
                                 <button 
-                                  className="retro-btn secondary" 
-                                  style={{ padding: '5px 10px', fontSize: '12px', backgroundColor: '#E76F51', color: 'white' }}
+                                  title={STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.DELETE}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
                                   onClick={() => handleDelete(vocab.id)}
                                 >
-                                  {STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.DELETE}
+                                  🗑️
                                 </button>
                             </td>
                             </tr>
