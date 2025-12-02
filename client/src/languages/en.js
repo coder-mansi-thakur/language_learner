@@ -220,6 +220,7 @@ export const STRINGS = {
       GOOGLE_AI: "Google AI (Cloud)",
       OCR_SPACE: "OCR.space API",
     },
+    ONLY_NEW_WORDS: "Only New Words",
     ADD_TO_VOCAB: "Add to Vocabulary",
     ADDED_SUCCESS: "Added to Vocabulary!",
     ERROR_ADDING: "Error adding to Vocabulary",

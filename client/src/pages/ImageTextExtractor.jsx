@@ -14,6 +14,10 @@ const ImageTextExtractor = () => {
   const { dbUser } = useAuth();
   const { post: createVocab } = usePost();
   const { data: languages } = useGet(ENDPOINTS.LANGUAGES.GET_ALL);
+  const { data: userVocab, refetch: refetchUserVocab } = useGet(
+    dbUser ? ENDPOINTS.USER_VOCABULARY.GET_BY_USER(dbUser.id) : null,
+    { enabled: !!dbUser }
+  );
 
   const [image, setImage] = useState(null);
   const [text, setText] = useState('');
@@ -25,6 +29,7 @@ const ImageTextExtractor = () => {
   const [translating, setTranslating] = useState(false);
   const [sourceLang, setSourceLang] = useState('kor');
   const [ocrMethod, setOcrMethod] = useState('tesseract');
+  const [onlyNewWords, setOnlyNewWords] = useState(false);
   const [addingToVocab, setAddingToVocab] = useState(false);
   const [addMessage, setAddMessage] = useState('');
 
@@ -117,7 +122,6 @@ const ImageTextExtractor = () => {
       .split(/\s+/)
       .map(w => w.replace(/[^\w\s\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u0900-\u097F]|_/g, "").trim())
       .filter(w => w.length > 0);
-    console.log("🚀 ~ extractText ~ foundWords:", foundWords, text)
 
     // Remove duplicates
     setWords([...new Set(foundWords)]);
@@ -267,6 +271,7 @@ const ImageTextExtractor = () => {
       });
 
       setAddMessage(STRINGS.IMAGE_EXTRACTOR.ADDED_SUCCESS);
+      refetchUserVocab();
     } catch (error) {
       console.error(error);
       if (error.response && error.response.status === 409) {
@@ -278,6 +283,20 @@ const ImageTextExtractor = () => {
       setAddingToVocab(false);
     }
   };
+
+  const displayedWords = React.useMemo(() => {
+    if (!onlyNewWords || !userVocab) return words;
+    
+    const clean = (w) => w.replace(/[^\w\s\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u0900-\u097F]|_/g, "").toLowerCase().trim();
+
+    const userWordSet = new Set(
+      userVocab
+        .filter(v => v.Vocabulary && v.Vocabulary.word)
+        .map(v => clean(v.Vocabulary.word))
+    );
+    
+    return words.filter(w => !userWordSet.has(clean(w)));
+  }, [words, onlyNewWords, userVocab]);
 
   return (
     <Layout>
@@ -347,9 +366,24 @@ const ImageTextExtractor = () => {
             <h2 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.EXTRACTED_TITLE}</h2>
             <p style={{ whiteSpace: 'pre-wrap', marginBottom: '20px' }}>{text}</p>
 
-            <h3 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.FOUND_WORDS_TITLE}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h3 className="retro-subtitle" style={{ margin: 0 }}>{STRINGS.IMAGE_EXTRACTOR.FOUND_WORDS_TITLE}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <input
+                  type="checkbox"
+                  id="onlyNewWords"
+                  checked={onlyNewWords}
+                  onChange={(e) => setOnlyNewWords(e.target.checked)}
+                  disabled={!dbUser}
+                  style={{ cursor: 'pointer' }}
+                />
+                <label htmlFor="onlyNewWords" style={{ cursor: 'pointer', opacity: !dbUser ? 0.5 : 1, fontSize: '0.9rem' }}>
+                  {STRINGS.IMAGE_EXTRACTOR.ONLY_NEW_WORDS}
+                </label>
+              </div>
+            </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              {words.map((word, index) => (
+              {displayedWords.map((word, index) => (
                 <span
                   key={index}
                   onClick={() => handleWordClick(word)}
