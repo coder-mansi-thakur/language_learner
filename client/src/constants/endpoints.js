@@ -14,6 +14,8 @@ export const ENDPOINTS = {
   VOCABULARY: {
     BASE: '/vocabulary',
     BULK_CREATE: '/vocabulary/bulk',
+    UPDATE: (vid) => `/vocabulary/${vid}`,
+    DELETE: (vid) => `/vocabulary/${vid}`,
   },
   USER_VOCABULARY: {
     GET_BY_USER: (uid) => `/user-vocabulary/${uid}`,

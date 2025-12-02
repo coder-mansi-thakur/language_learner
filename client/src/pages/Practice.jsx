@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { useGet, usePost } from '../hooks/useApi';
+import Modal from '../components/Modal';
+import { useGet, usePost, usePut, useDelete } from '../hooks/useApi';
 import { useAuth } from '../contexts/AuthContext';
 import { STRINGS } from '../constants/strings';
 import { ENDPOINTS } from '../constants/endpoints';
@@ -27,12 +28,17 @@ const Practice = () => {
   const { data: sentences, loading: loadingSentences, refetch: refetchSentences } = useGet(sentencesEndpoint, { enabled: !!currentUser && !!language && mode === 'sentences' });
 
   const { post: updateProgress } = usePost();
+  const { put: updateCard } = usePut();
+  const { del: deleteCard } = useDelete();
 
   const [queue, setQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
   const [isDoneForToday, setIsDoneForToday] = useState(false);
+  
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingData, setEditingData] = useState({});
 
   const { due, mastered, combined } = useMemo(() => {
     if ((mode === 'vocab' && !userProgress) || (mode === 'sentences' && !sentences)) {
@@ -67,6 +73,14 @@ const Practice = () => {
 
   // Prepare the queue when data is ready
   useEffect(() => {
+    // Prevent reshuffling if queue is already populated with correct type
+    if (queue.length > 0) {
+      const currentType = mode === 'vocab' ? 'vocab' : 'sentence';
+      if (queue[0].type === currentType) {
+        return;
+      }
+    }
+
     if ((mode === 'vocab' && userProgress) || (mode === 'sentences' && sentences)) {
       if (due.length === 0 && mastered.length > 0) {
         setIsDoneForToday(true);
@@ -89,7 +103,7 @@ const Practice = () => {
         setQueue(sessionQueue);
       }
     }
-  }, [userProgress, sentences, due, mastered, combined, mode]);
+  }, [userProgress, sentences, due, mastered, combined, mode, queue]);
 
   const handlePracticeRest = () => {
     const shuffle = (array) => array.sort(() => Math.random() - 0.5);
@@ -107,6 +121,84 @@ const Practice = () => {
   };
 
   const currentCard = queue[currentIndex];
+
+  const handleDeleteCard = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm(STRINGS.PRACTICE.CONFIRM_DELETE)) return;
+
+    try {
+      if (currentCard.type === 'vocab') {
+        await deleteCard(ENDPOINTS.VOCABULARY.DELETE(currentCard.id));
+      } else {
+        await deleteCard(ENDPOINTS.SENTENCES.DELETE(currentUser.uid, currentCard.id));
+      }
+
+      // Remove from queue
+      const newQueue = queue.filter((_, index) => index !== currentIndex);
+      setQueue(newQueue);
+      
+      // If we deleted the last card, or the queue is now empty
+      if (newQueue.length === 0) {
+        setSessionComplete(true);
+      } else if (currentIndex >= newQueue.length) {
+        // If we were at the end, go to the new end
+        setCurrentIndex(newQueue.length - 1);
+        setIsFlipped(false);
+      } else {
+        // Stay at current index (which is now the next card)
+        setIsFlipped(false);
+      }
+      
+      // Refetch to keep data in sync
+      if (mode === 'vocab') refetchProgress();
+      if (mode === 'sentences') refetchSentences();
+
+    } catch (error) {
+      console.error("Error deleting card:", error);
+      alert("Failed to delete card");
+    }
+  };
+
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    setEditingData({ ...currentCard });
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      if (currentCard.type === 'vocab') {
+        await updateCard(ENDPOINTS.VOCABULARY.UPDATE(currentCard.id), {
+          word: editingData.word,
+          translation: editingData.translation,
+          pronunciation: editingData.pronunciation,
+          exampleSentence: editingData.exampleSentence,
+          exampleTranslation: editingData.exampleTranslation
+        });
+      } else {
+        await updateCard(ENDPOINTS.SENTENCES.UPDATE(currentUser.uid, currentCard.id), {
+          originalSentence: editingData.originalSentence,
+          translatedSentence: editingData.translatedSentence,
+          // Add other fields if necessary
+        });
+      }
+
+      // Update queue
+      const newQueue = [...queue];
+      newQueue[currentIndex] = { ...newQueue[currentIndex], ...editingData };
+      setQueue(newQueue);
+      
+      setEditModalOpen(false);
+      
+      // Refetch
+      if (mode === 'vocab') refetchProgress();
+      if (mode === 'sentences') refetchSentences();
+
+    } catch (error) {
+      console.error("Error updating card:", error);
+      alert("Failed to update card");
+    }
+  };
 
   const handleRate = async (rating) => {
     if (!currentCard) return;
@@ -236,10 +328,29 @@ const Practice = () => {
             alignItems: 'center',
             cursor: 'pointer',
             perspective: '1000px',
-            marginBottom: '30px'
+            marginBottom: '30px',
+            position: 'relative'
           }}
           onClick={() => setIsFlipped(!isFlipped)}
         >
+          <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }} onClick={(e) => e.stopPropagation()}>
+             <button 
+                className="retro-btn secondary" 
+                style={{ padding: '4px 8px', fontSize: '12px', minWidth: 'auto' }}
+                onClick={handleEditClick}
+                title={STRINGS.PRACTICE.EDIT_CARD}
+             >
+               ✏️
+             </button>
+             <button 
+                className="retro-btn secondary" 
+                style={{ padding: '4px 8px', fontSize: '12px', backgroundColor: '#ff6b6b', color: 'white', minWidth: 'auto' }}
+                onClick={handleDeleteCard}
+                title={STRINGS.PRACTICE.DELETE_CARD}
+             >
+               🗑️
+             </button>
+          </div>
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ fontSize: '48px', margin: '20px 0' }}>
               {isFlipped 
@@ -307,6 +418,94 @@ const Practice = () => {
           >
             {STRINGS.PRACTICE.SHOW_ANSWER}
           </button>
+        )}
+        
+        {editModalOpen && (
+          <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)}>
+            <div style={{ padding: '20px' }}>
+              <h2>{STRINGS.PRACTICE.EDIT_CARD}</h2>
+              {currentCard.type === 'vocab' ? (
+                <>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label>{STRINGS.PRACTICE.WORD}</label>
+                    <input 
+                      type="text" 
+                      value={editingData.word} 
+                      onChange={(e) => setEditingData({ ...editingData, word: e.target.value })}
+                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label>{STRINGS.PRACTICE.TRANSLATION}</label>
+                    <input 
+                      type="text" 
+                      value={editingData.translation} 
+                      onChange={(e) => setEditingData({ ...editingData, translation: e.target.value })}
+                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label>{STRINGS.PRACTICE.PRONUNCIATION}</label>
+                    <input 
+                      type="text" 
+                      value={editingData.pronunciation} 
+                      onChange={(e) => setEditingData({ ...editingData, pronunciation: e.target.value })}
+                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label>{STRINGS.PRACTICE.EXAMPLE_SENTENCE}</label>
+                    <input 
+                      type="text" 
+                      value={editingData.exampleSentence} 
+                      onChange={(e) => setEditingData({ ...editingData, exampleSentence: e.target.value })}
+                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label>{STRINGS.PRACTICE.EXAMPLE_TRANSLATION}</label>
+                    <input 
+                      type="text" 
+                      value={editingData.exampleTranslation} 
+                      onChange={(e) => setEditingData({ ...editingData, exampleTranslation: e.target.value })}
+                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label>{STRINGS.PRACTICE.ORIGINAL_SENTENCE}</label>
+                    <input 
+                      type="text" 
+                      value={editingData.originalSentence} 
+                      onChange={(e) => setEditingData({ ...editingData, originalSentence: e.target.value })}
+                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '10px' }}>
+                    <label>{STRINGS.PRACTICE.TRANSLATED_SENTENCE}</label>
+                    <input 
+                      type="text" 
+                      value={editingData.translatedSentence} 
+                      onChange={(e) => setEditingData({ ...editingData, translatedSentence: e.target.value })}
+                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                    />
+                  </div>
+                  {/* Add other fields for sentences if necessary */}
+                </>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                <button className="retro-btn secondary" onClick={() => setEditModalOpen(false)} style={{ marginRight: '10px' }}>
+                  {STRINGS.PRACTICE.CANCEL}
+                </button>
+                <button className="retro-btn" onClick={handleSaveEdit}>
+                  {STRINGS.PRACTICE.SAVE}
+                </button>
+              </div>
+            </div>
+          </Modal>
         )}
       </div>
     </Layout>
