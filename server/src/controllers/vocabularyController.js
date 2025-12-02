@@ -62,6 +62,30 @@ export const createVocabulary = async (req, res) => {
   }
 };
 
+export const bulkCreateVocabulary = async (req, res) => {
+  const { vocabList } = req.body; // Expecting an array of vocabulary objects
+  
+  if (!Array.isArray(vocabList) || vocabList.length === 0) {
+    return res.status(400).json({ message: 'Invalid input: vocabList must be a non-empty array' });
+  }
+
+  try {
+    // Use ignoreDuplicates to skip existing words based on unique constraints
+    const createdVocab = await Vocabulary.bulkCreate(vocabList, {
+      ignoreDuplicates: true,
+      validate: true
+    });
+    
+    res.status(201).json({ 
+      message: `Successfully processed ${vocabList.length} items. Created ${createdVocab.length} new words.`,
+      count: createdVocab.length 
+    });
+  } catch (error) {
+    console.error('Error bulk creating vocabulary:', error);
+    res.status(500).json({ message: 'Server Error during bulk import' });
+  }
+};
+
 export const updateVocabulary = async (req, res) => {
   const { id } = req.params;
   const updates = req.body;

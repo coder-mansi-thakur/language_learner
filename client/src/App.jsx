@@ -14,6 +14,7 @@ import LanguageLearn from './pages/LanguageLearn';
 import Practice from './pages/Practice';
 import VocabCMS from './pages/VocabCMS';
 import AddWord from './pages/AddWord';
+import ImportAnki from './pages/ImportAnki';
 import MyVocabulary from './pages/MyVocabulary';
 import ImageTextExtractor from './pages/ImageTextExtractor';
 import HabitTracker from './pages/HabitTracker';
@@ -49,6 +50,7 @@ function App() {
             <Route path="/habits" element={<HabitTracker />} />
             <Route path="/learn/:code" element={<LanguageLearn />} />
             <Route path="/add-word/:code" element={<AddWord />} />
+            <Route path="/import-anki/:code" element={<ImportAnki />} />
             <Route path="/practice/:code" element={<Practice />} />
             <Route path="/my-vocab/:code" element={<MyVocabulary />} />
             <Route path="/image-extractor" element={<ImageTextExtractor />} />

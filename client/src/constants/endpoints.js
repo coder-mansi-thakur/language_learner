@@ -13,6 +13,7 @@ export const ENDPOINTS = {
   },
   VOCABULARY: {
     BASE: '/vocabulary',
+    BULK_CREATE: '/vocabulary/bulk',
   },
   USER_VOCABULARY: {
     GET_BY_USER: (uid) => `/user-vocabulary/${uid}`,

@@ -53,6 +53,12 @@ const LanguageLearn = () => {
             </button>
             <button 
                 className="retro-btn secondary" 
+                onClick={() => navigate(`/import-anki/${code}`)}
+            >
+                Import Anki
+            </button>
+            <button 
+                className="retro-btn secondary" 
                 onClick={() => navigate(`/my-vocab/${code}`)}
             >
                 My Vocabulary

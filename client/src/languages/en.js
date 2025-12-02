@@ -224,5 +224,23 @@ export const STRINGS = {
     ERROR_EXISTS: "Word already exists in Vocabulary",
     LOGIN_REQUIRED: "Please login to add words",
     LANGUAGE_NOT_FOUND: "Language not found in database",
+  },
+  IMPORT_ANKI: {
+    TITLE: "Import Anki Deck",
+    DESC: "Upload a CSV or TSV file exported from Anki to bulk import vocabulary.",
+    FILE_LABEL: "Select File (CSV/TSV)",
+    PREVIEW: "Preview",
+    MAPPING_TITLE: "Map Columns",
+    COLUMNS: {
+      WORD: "Word",
+      TRANSLATION: "Translation",
+      PRONUNCIATION: "Pronunciation",
+      EXAMPLE: "Example Sentence",
+    },
+    IMPORT_BTN: "Import Vocabulary",
+    SUCCESS: "Successfully imported vocabulary!",
+    ERROR: "Failed to import vocabulary.",
+    NO_FILE: "Please select a file first.",
+    PARSING_ERROR: "Error parsing file.",
   }
 };
