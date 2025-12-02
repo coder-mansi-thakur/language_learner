@@ -106,6 +106,14 @@ body {
   box-shadow: var(--box-shadow-active);
 }
 
+.retro-btn:disabled {
+  background-color: var(--color-cream-dark);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: translate(var(--shadow-offset), var(--shadow-offset));
+  opacity: 0.6;
+}
+
 .retro-btn.secondary {
   background-color: var(--color-white);
   color: var(--text-main);

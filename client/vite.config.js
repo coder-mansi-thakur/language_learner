@@ -15,18 +15,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 86400 // 1 day
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
+            urlPattern: ({ url, request }) => url.pathname.startsWith('/api') && request.method === 'GET',
+            handler: 'NetworkOnly'
           }
         ]
       },
