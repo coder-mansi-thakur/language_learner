@@ -36,6 +36,10 @@ app.use('/api/vocabulary', vocabularyRoutes);
 app.use('/api/user-vocabulary', userVocabularyRoutes);
 app.use('/api/habits', habitRoutes);
 
+app.get('/api/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
 app.get('/', (req, res) => {
   res.send('API is running...');
 });

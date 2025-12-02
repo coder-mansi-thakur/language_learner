@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import axios from 'axios';
+import { config } from './config/api';
+import { ENDPOINTS } from './constants/endpoints';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import DesignSystem from './pages/DesignSystem';
@@ -16,6 +19,24 @@ import ImageTextExtractor from './pages/ImageTextExtractor';
 import HabitTracker from './pages/HabitTracker';
 
 function App() {
+  useEffect(() => {
+    const pingBackend = async () => {
+      try {
+        await axios.get(`${config.API_BASE_URL}${ENDPOINTS.PING}`);
+      } catch (error) {
+        console.error('Ping failed', error);
+      }
+    };
+
+    // Ping immediately on load
+    pingBackend();
+
+    // Ping every 14 minutes to keep backend awake
+    const interval = setInterval(pingBackend, 14 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

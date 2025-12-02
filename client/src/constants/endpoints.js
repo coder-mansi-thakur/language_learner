@@ -17,5 +17,6 @@ export const ENDPOINTS = {
   USER_VOCABULARY: {
     GET_BY_USER: (uid) => `/user-vocabulary/${uid}`,
     UPDATE_PROGRESS: (uid) => `/user-vocabulary/${uid}/progress`,
-  }
+  },
+  PING: '/ping',
 };
