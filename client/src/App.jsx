@@ -18,6 +18,7 @@ import ImportAnki from './pages/ImportAnki';
 import MyVocabulary from './pages/MyVocabulary';
 import ImageTextExtractor from './pages/ImageTextExtractor';
 import HabitTracker from './pages/HabitTracker';
+import SentenceGenerator from './pages/SentenceGenerator';
 
 function App() {
   useEffect(() => {
@@ -53,6 +54,7 @@ function App() {
             <Route path="/import-anki/:code" element={<ImportAnki />} />
             <Route path="/practice/:code" element={<Practice />} />
             <Route path="/my-vocab/:code" element={<MyVocabulary />} />
+            <Route path="/sentences/:code" element={<SentenceGenerator />} />
             <Route path="/image-extractor" element={<ImageTextExtractor />} />
             <Route path="/image-extractor/:code" element={<ImageTextExtractor />} />
             <Route path="/admin/vocab" element={<VocabCMS />} />
@@ -66,3 +68,4 @@ function App() {
 }
 
 export default App;
+

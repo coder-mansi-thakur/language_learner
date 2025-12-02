@@ -20,6 +20,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import vocabularyRoutes from './routes/vocabularyRoutes.js';
 import userVocabularyRoutes from './routes/userVocabularyRoutes.js';
 import habitRoutes from './routes/habitRoutes.js';
+import sentenceRoutes from './routes/sentenceRoutes.js';
 import { seedLanguages } from './utils/seedLanguages.js';
 import { seedVocabulary } from './utils/seedVocabulary.js';
 
@@ -35,6 +36,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/vocabulary', vocabularyRoutes);
 app.use('/api/user-vocabulary', userVocabularyRoutes);
 app.use('/api/habits', habitRoutes);
+app.use('/api/sentences', sentenceRoutes);
 
 app.get('/api/ping', (req, res) => {
   res.status(200).send('pong');

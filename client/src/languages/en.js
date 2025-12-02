@@ -50,6 +50,8 @@ export const STRINGS = {
   LANGUAGE_LEARN: {
     START_LESSON: "Start Lesson",
     PRACTICE: "Practice",
+    PRACTICE_VOCAB: "Practice Vocabulary",
+    PRACTICE_SENTENCES: "Practice Sentences",
     READY_MESSAGE: "Ready to continue your learning journey?",
     ERROR_LOADING: "Error loading language.",
     BACK_DASHBOARD: "Back to Dashboard",
@@ -63,7 +65,7 @@ export const STRINGS = {
     REVIEWED_COUNT: (count) => `You've reviewed ${count} words.`,
     PRACTICE_AGAIN: "Practice Again",
     PRACTICE_REST: "Practice Rest",
-    NO_VOCAB: "No vocabulary found for this language yet.",
+    NO_VOCAB: "No items found for this language yet.",
     EXIT: "Exit",
     TRANSLATION: "Translation",
     CLICK_FLIP: "Click to flip",

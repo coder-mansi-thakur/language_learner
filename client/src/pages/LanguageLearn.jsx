@@ -63,7 +63,14 @@ const LanguageLearn = () => {
             >
                 My Vocabulary
             </button>
+            <button 
+                className="retro-btn secondary" 
+                onClick={() => navigate(`/sentences/${code}`)}
+            >
+                Sentence Generator
+            </button>
         </div>
+
 
         <div className="retro-card" style={{ textAlign: 'center', padding: '40px' }}>
           <span style={{ fontSize: '80px', display: 'block', marginBottom: '20px' }}>
@@ -74,7 +81,7 @@ const LanguageLearn = () => {
             {STRINGS.LANGUAGE_LEARN.READY_MESSAGE}
           </p>
           
-          <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
+          <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <button 
               className="retro-btn" 
               style={{ fontSize: '18px', padding: '15px 30px' }}
@@ -85,9 +92,16 @@ const LanguageLearn = () => {
             <button 
               className="retro-btn secondary" 
               style={{ fontSize: '18px', padding: '15px 30px' }}
-              onClick={() => navigate(`/practice/${code}`)}
+              onClick={() => navigate(`/practice/${code}?mode=vocab`)}
             >
-              {STRINGS.LANGUAGE_LEARN.PRACTICE}
+              {STRINGS.LANGUAGE_LEARN.PRACTICE_VOCAB}
+            </button>
+            <button 
+              className="retro-btn secondary" 
+              style={{ fontSize: '18px', padding: '15px 30px' }}
+              onClick={() => navigate(`/practice/${code}?mode=sentences`)}
+            >
+              {STRINGS.LANGUAGE_LEARN.PRACTICE_SENTENCES}
             </button>
           </div>
         </div>

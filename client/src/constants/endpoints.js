@@ -19,5 +19,11 @@ export const ENDPOINTS = {
     GET_BY_USER: (uid) => `/user-vocabulary/${uid}`,
     UPDATE_PROGRESS: (uid) => `/user-vocabulary/${uid}/progress`,
   },
+  SENTENCES: {
+    BASE: (uid) => `/sentences/${uid}`,
+    GENERATE: (uid) => `/sentences/${uid}/generate`,
+    UPDATE_PROGRESS: (uid) => `/sentences/${uid}/progress`,
+  },
   PING: '/ping',
 };
+

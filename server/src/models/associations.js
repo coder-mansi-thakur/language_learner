@@ -6,6 +6,7 @@ import Vocabulary from './Vocabulary.js';
 import UserVocabulary from './UserVocabulary.js';
 import Habit from './Habit.js';
 import HabitLog from './HabitLog.js';
+import Sentence from './Sentence.js';
 
 // Define associations
 User.belongsToMany(Language, { through: UserLanguage, foreignKey: 'userId' });
@@ -45,4 +46,12 @@ Habit.belongsTo(User, { foreignKey: 'userId' });
 Habit.hasMany(HabitLog, { foreignKey: 'habitId' });
 HabitLog.belongsTo(Habit, { foreignKey: 'habitId' });
 
-export { User, Language, UserLanguage, Category, Vocabulary, UserVocabulary, Habit, HabitLog };
+// Sentence Associations
+User.hasMany(Sentence, { foreignKey: 'userId' });
+Sentence.belongsTo(User, { foreignKey: 'userId' });
+
+Language.hasMany(Sentence, { foreignKey: 'languageId' });
+Sentence.belongsTo(Language, { foreignKey: 'languageId' });
+
+export { User, Language, UserLanguage, Category, Vocabulary, UserVocabulary, Habit, HabitLog, Sentence };
+

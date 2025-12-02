@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useGet, usePost } from '../hooks/useApi';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,6 +9,10 @@ import { ENDPOINTS } from '../constants/endpoints';
 const Practice = () => {
   const { code } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const mode = searchParams.get('mode') || 'vocab'; // 'vocab' or 'sentences'
+
   const { currentUser, dbUser } = useAuth();
   
   // 1. Fetch Language Details
@@ -16,7 +20,11 @@ const Practice = () => {
   
   // 2. Fetch User's Progress (which includes Vocabulary details)
   const userVocabEndpoint = currentUser && language ? `${ENDPOINTS.USER_VOCABULARY.GET_BY_USER(dbUser.id)}?languageId=${language.id}` : null;
-  const { data: userProgress, loading: loadingUserProgress, refetch: refetchProgress } = useGet(userVocabEndpoint, { enabled: !!currentUser && !!language });
+  const { data: userProgress, loading: loadingUserProgress, refetch: refetchProgress } = useGet(userVocabEndpoint, { enabled: !!currentUser && !!language && mode === 'vocab' });
+
+  // 3. Fetch Sentences
+  const sentencesEndpoint = currentUser && language ? `${ENDPOINTS.SENTENCES.BASE(currentUser.uid)}?languageId=${language.id}` : null;
+  const { data: sentences, loading: loadingSentences, refetch: refetchSentences } = useGet(sentencesEndpoint, { enabled: !!currentUser && !!language && mode === 'sentences' });
 
   const { post: updateProgress } = usePost();
 
@@ -27,22 +35,39 @@ const Practice = () => {
   const [isDoneForToday, setIsDoneForToday] = useState(false);
 
   const { due, mastered, combined } = useMemo(() => {
-    if (!userProgress) return { due: [], mastered: [], combined: [] };
+    if ((mode === 'vocab' && !userProgress) || (mode === 'sentences' && !sentences)) {
+      return { due: [], mastered: [], combined: [] };
+    }
     
-    const combined = userProgress.map(up => ({
-      ...up.Vocabulary,
-      userProgress: up
-    }));
+    let allItems = [];
 
-    const due = combined.filter(w => w.userProgress?.status === 'learning' || w.userProgress?.status === 'review' || w.userProgress?.nextReviewDate === null || new Date(w.userProgress?.nextReviewDate) <= new Date()|| w.userProgress?.status === 'new');
-    const mastered = combined.filter(w => w.userProgress?.status === 'mastered');
+    if (mode === 'vocab' && userProgress) {
+      allItems = userProgress.map(up => ({
+        ...up.Vocabulary,
+        userProgress: up,
+        type: 'vocab'
+      }));
+    } else if (mode === 'sentences' && sentences) {
+      allItems = sentences.map(s => ({
+        ...s,
+        userProgress: {
+          status: s.status,
+          strength: s.strength,
+          nextReviewDate: s.nextReviewDate
+        },
+        type: 'sentence'
+      }));
+    }
+
+    const due = allItems.filter(w => w.userProgress?.status === 'learning' || w.userProgress?.status === 'review' || w.userProgress?.nextReviewDate === null || new Date(w.userProgress?.nextReviewDate) <= new Date()|| w.userProgress?.status === 'new');
+    const mastered = allItems.filter(w => w.userProgress?.status === 'mastered');
     
-    return { due, mastered, combined };
-  }, [userProgress]);
+    return { due, mastered, combined: allItems };
+  }, [userProgress, sentences, mode]);
 
   // Prepare the queue when data is ready
   useEffect(() => {
-    if (userProgress) {
+    if ((mode === 'vocab' && userProgress) || (mode === 'sentences' && sentences)) {
       if (due.length === 0 && mastered.length > 0) {
         setIsDoneForToday(true);
         return;
@@ -64,7 +89,7 @@ const Practice = () => {
         setQueue(sessionQueue);
       }
     }
-  }, [userProgress, due, mastered, combined]);
+  }, [userProgress, sentences, due, mastered, combined, mode]);
 
   const handlePracticeRest = () => {
     const shuffle = (array) => array.sort(() => Math.random() - 0.5);
@@ -114,11 +139,19 @@ const Practice = () => {
     }
 
     try {
-      await updateProgress(ENDPOINTS.USER_VOCABULARY.UPDATE_PROGRESS(currentUser.uid), {
-        vocabularyId: currentCard.id,
-        status: newStatus,
-        strength: newStrength
-      });
+      if (currentCard.type === 'vocab') {
+        await updateProgress(ENDPOINTS.USER_VOCABULARY.UPDATE_PROGRESS(currentUser.uid), {
+          vocabularyId: currentCard.id,
+          status: newStatus,
+          strength: newStrength
+        });
+      } else {
+        await updateProgress(ENDPOINTS.SENTENCES.UPDATE_PROGRESS(currentUser.uid), {
+          sentenceId: currentCard.id,
+          status: newStatus,
+          strength: newStrength
+        });
+      }
 
       // Move to next card
       if (currentIndex < queue.length - 1) {
@@ -126,14 +159,15 @@ const Practice = () => {
         setCurrentIndex(prev => prev + 1);
       } else {
         setSessionComplete(true);
-        refetchProgress(); // Sync for next time
+        if (mode === 'vocab') refetchProgress(); // Sync for next time
+        if (mode === 'sentences') refetchSentences();
       }
     } catch (error) {
       console.error(STRINGS.PRACTICE.ERROR_UPDATE_PROGRESS, error);
     }
   };
 
-  if (loadingUserProgress || !language) {
+  if ((mode === 'vocab' && loadingUserProgress) || (mode === 'sentences' && loadingSentences) || !language) {
     return (
       <Layout>
         <div className="retro-container" style={{ textAlign: 'center' }}>
@@ -208,18 +242,27 @@ const Practice = () => {
         >
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ fontSize: '48px', margin: '20px 0' }}>
-              {isFlipped ? currentCard.word : currentCard.translation}
+              {isFlipped 
+                ? (currentCard.type === 'vocab' ? currentCard.word : currentCard.originalSentence) 
+                : (currentCard.type === 'vocab' ? currentCard.translation : currentCard.translatedSentence)
+              }
             </h2>
-            {isFlipped && currentCard.pronunciation && (
+            {isFlipped && currentCard.type === 'vocab' && currentCard.pronunciation && (
               <p style={{ fontSize: '18px', opacity: 0.8, fontStyle: 'italic' }}>
                 /{currentCard.pronunciation}/
               </p>
             )}
-            {isFlipped && currentCard.exampleSentence && (
+            {isFlipped && currentCard.type === 'vocab' && currentCard.exampleSentence && (
               <div style={{ marginTop: '20px', fontSize: '16px', opacity: 0.8 }}>
                 <p>"{currentCard.exampleSentence}"</p>
                 <p style={{ fontStyle: 'italic' }}>{currentCard.exampleTranslation}</p>
               </div>
+            )}
+            {isFlipped && currentCard.type === 'sentence' && (
+               <div style={{ marginTop: '20px', fontSize: '14px', opacity: 0.6 }}>
+                 <span style={{ marginRight: '10px', padding: '2px 6px', border: '1px solid currentColor', borderRadius: '4px' }}>{currentCard.level}</span>
+                 {currentCard.tense && <span style={{ padding: '2px 6px', border: '1px solid currentColor', borderRadius: '4px' }}>{currentCard.tense}</span>}
+               </div>
             )}
           </div>
           <p style={{ marginTop: 'auto', fontSize: '12px', opacity: 0.5 }}>{STRINGS.PRACTICE.CLICK_FLIP}</p>
