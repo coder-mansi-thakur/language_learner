@@ -53,13 +53,13 @@ const Practice = () => {
       const shuffle = (array) => array.sort(() => Math.random() - 0.5);
 
       const sessionQueue = [
-        ...shuffle(due).slice(0, 10),
-        ...shuffle(mastered).slice(0, 5)
+        ...shuffle(due),
+        ...shuffle(mastered)
       ];
 
       // If queue is empty (e.g. no words), just show all shuffled
       if (sessionQueue.length === 0 && combined.length > 0) {
-        setQueue(shuffle(combined).slice(0, 10));
+        setQueue(shuffle(combined));
       } else {
         setQueue(sessionQueue);
       }
