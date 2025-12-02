@@ -435,7 +435,7 @@ const ImageTextExtractor = () => {
                 </thead>
                 <tbody>
                   {displayedWords.map((item, index) => (
-                    <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <tr key={item.word} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '10px' }}>{item.word}</td>
                       <td style={{ padding: '10px' }}>
                         {item.translation ? (
