@@ -1,11 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { User, Sentence, UserVocabulary, Vocabulary, Language } from '../models/associations.js';
+import { Op } from 'sequelize';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const generateSentences = async (req, res) => {
   const { firebaseUid } = req.params;
-  const { languageId, level, tense } = req.body;
+  const { languageId, level, customPrompt } = req.body;
 
   try {
     const user = await User.findOne({ where: { firebaseUid } });
@@ -14,11 +15,13 @@ export const generateSentences = async (req, res) => {
     const language = await Language.findByPk(languageId);
     if (!language) return res.status(404).json({ message: 'Language not found' });
 
-    // Fetch mastered vocabulary
+    // Fetch vocabulary based on strength
     const userVocab = await UserVocabulary.findAll({
       where: {
         userId: user.id,
-        status: 'mastered' // Assuming 'mastered' is the status for mastered words
+        strength: {
+          [Op.gt]: 0.6 // Only consider words with strength greater than 0.6
+        }
       },
       include: [
         {
@@ -32,7 +35,7 @@ export const generateSentences = async (req, res) => {
     const masteredWords = userVocab.map(uv => uv.Vocabulary.word);
 
     if (masteredWords.length === 0) {
-      return res.status(400).json({ message: 'No mastered vocabulary found to generate sentences.' });
+      return res.status(400).json({ message: 'No vocabulary with sufficient strength found to generate sentences.' });
     }
 
     // Select a random subset of mastered words to include (e.g., up to 20)
@@ -41,9 +44,11 @@ export const generateSentences = async (req, res) => {
     const prompt = `
       Generate 10 sentences in ${language.name} using the following words: ${selectedWords.join(', ')}.
       The sentences should be suitable for a ${level} level learner.
-      The sentences should be in the ${tense} tense.
+      ${customPrompt ? `Additional instructions: ${customPrompt}` : ''}
       Provide the output as a JSON array of objects, where each object has "originalSentence" (in ${language.name}) and "translatedSentence" (in English).
       Do not include any markdown formatting or code blocks, just the raw JSON string.
+      And ensure the sentences vary in structure and vocabulary usage.
+      And make sure the sentences are relevant to everyday situations.
     `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -72,7 +77,7 @@ export const generateSentences = async (req, res) => {
 
 export const saveSentence = async (req, res) => {
   const { firebaseUid } = req.params;
-  const { originalSentence, translatedSentence, level, tense, languageId } = req.body;
+  const { originalSentence, translatedSentence, level, languageId } = req.body;
 
   try {
     const user = await User.findOne({ where: { firebaseUid } });
@@ -83,8 +88,7 @@ export const saveSentence = async (req, res) => {
       languageId,
       originalSentence,
       translatedSentence,
-      level,
-      tense
+      level
     });
 
     res.status(201).json(sentence);
@@ -146,7 +150,7 @@ export const deleteSentence = async (req, res) => {
 
 export const updateSentence = async (req, res) => {
   const { firebaseUid, id } = req.params;
-  const { originalSentence, translatedSentence, level, tense } = req.body;
+  const { originalSentence, translatedSentence, level } = req.body;
 
   try {
     const user = await User.findOne({ where: { firebaseUid } });
@@ -164,7 +168,6 @@ export const updateSentence = async (req, res) => {
     sentence.originalSentence = originalSentence || sentence.originalSentence;
     sentence.translatedSentence = translatedSentence || sentence.translatedSentence;
     sentence.level = level || sentence.level;
-    sentence.tense = tense || sentence.tense;
 
     await sentence.save();
 

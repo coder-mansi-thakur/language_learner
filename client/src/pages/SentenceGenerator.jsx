@@ -13,7 +13,7 @@ const SentenceGenerator = () => {
   const navigate = useNavigate();
   
   const [level, setLevel] = useState('beginner');
-  const [tense, setTense] = useState('Present');
+  const [customPrompt, setCustomPrompt] = useState('');
   const [generatedSentences, setGeneratedSentences] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [editingSentence, setEditingSentence] = useState(null);
@@ -36,7 +36,7 @@ const SentenceGenerator = () => {
       const result = await generate(ENDPOINTS.SENTENCES.GENERATE(dbUser.firebaseUid), {
         languageId: language.id,
         level,
-        tense
+        customPrompt
       });
       setGeneratedSentences(result);
     } catch (error) {
@@ -54,8 +54,7 @@ const SentenceGenerator = () => {
         languageId: language.id,
         originalSentence: sentence.originalSentence,
         translatedSentence: sentence.translatedSentence,
-        level,
-        tense
+        level
       });
       setGeneratedSentences(prev => prev.filter(s => s.originalSentence !== sentence.originalSentence));
       refetchSaved();
@@ -82,8 +81,7 @@ const SentenceGenerator = () => {
       await updateSentence(`${ENDPOINTS.SENTENCES.BASE(dbUser.firebaseUid)}/${editingSentence.id}`, {
         originalSentence: editingSentence.originalSentence,
         translatedSentence: editingSentence.translatedSentence,
-        level: editingSentence.level,
-        tense: editingSentence.tense
+        level: editingSentence.level
       });
       setEditingSentence(null);
       refetchSaved();
@@ -123,12 +121,12 @@ const SentenceGenerator = () => {
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Tense</label>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Custom Instructions (Optional)</label>
               <input 
                 className="retro-input" 
-                value={tense}
-                onChange={(e) => setTense(e.target.value)}
-                placeholder="e.g. Present, Past, Future"
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="e.g. about travel, using specific grammar..."
               />
             </div>
           </div>
@@ -185,12 +183,6 @@ const SentenceGenerator = () => {
                     { value: 'advanced', label: 'Advanced' }
                   ]}
                 />
-                <input 
-                  className="retro-input" 
-                  value={editingSentence.tense}
-                  onChange={(e) => setEditingSentence({...editingSentence, tense: e.target.value})}
-                  placeholder="Tense"
-                />
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button className="retro-btn" onClick={handleUpdate}>Update</button>
@@ -208,7 +200,6 @@ const SentenceGenerator = () => {
                 <div key={s.id} style={{ padding: '15px', backgroundColor: 'var(--color-white)', border: '2px solid var(--border-color)', borderRadius: '8px', position: 'relative' }}>
                   <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
                     <span className="retro-tag" style={{ marginRight: '10px' }}>{s.level}</span>
-                    <span className="retro-tag">{s.tense}</span>
                     <button 
                       style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', marginLeft: '10px' }}
                       onClick={() => setEditingSentence(s)}
