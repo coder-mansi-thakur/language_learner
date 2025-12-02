@@ -141,7 +141,7 @@ const MyVocabulary = () => {
           Start Practice
         </button>
 
-        <h1 style={{ marginBottom: '20px' }}>My Vocabulary</h1>
+        <h1 style={{ marginBottom: '20px' }}>My Vocabulary ({sortedVocabulary?.length || 0})</h1>
         
         <div className="retro-card">
             {editingVocabId && (
