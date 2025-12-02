@@ -23,6 +23,10 @@ const HabitLog = sequelize.define('HabitLog', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  imageUrl: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   timestamps: true,
   indexes: [

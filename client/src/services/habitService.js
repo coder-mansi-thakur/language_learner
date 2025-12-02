@@ -13,12 +13,17 @@ export const createHabit = async (firebaseUid, habitData) => {
   return response.data;
 };
 
+export const updateHabit = async (firebaseUid, habitId, habitData) => {
+  const response = await axios.put(`${API_URL}/${firebaseUid}/${habitId}`, habitData);
+  return response.data;
+};
+
 export const deleteHabit = async (firebaseUid, habitId) => {
   const response = await axios.delete(`${API_URL}/${firebaseUid}/${habitId}`);
   return response.data;
 };
 
-export const toggleHabitLog = async (firebaseUid, habitId, date) => {
-  const response = await axios.post(`${API_URL}/${firebaseUid}/${habitId}/toggle`, { date });
+export const toggleHabitLog = async (firebaseUid, habitId, date, imageUrl = null) => {
+  const response = await axios.post(`${API_URL}/${firebaseUid}/${habitId}/toggle`, { date, imageUrl });
   return response.data;
 };

@@ -50,6 +50,31 @@ export const createHabit = async (req, res) => {
   }
 };
 
+export const updateHabit = async (req, res) => {
+  const { firebaseUid, habitId } = req.params;
+  const { name, description, frequency, targetCount, color } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { firebaseUid } });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const habit = await Habit.findOne({ where: { id: habitId, userId: user.id } });
+    if (!habit) return res.status(404).json({ message: 'Habit not found' });
+
+    habit.name = name || habit.name;
+    habit.description = description !== undefined ? description : habit.description;
+    habit.frequency = frequency || habit.frequency;
+    habit.targetCount = targetCount || habit.targetCount;
+    habit.color = color || habit.color;
+
+    await habit.save();
+    res.json(habit);
+  } catch (error) {
+    console.error('Error updating habit:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 export const deleteHabit = async (req, res) => {
   const { firebaseUid, habitId } = req.params;
 
@@ -70,7 +95,7 @@ export const deleteHabit = async (req, res) => {
 
 export const toggleHabitLog = async (req, res) => {
   const { firebaseUid, habitId } = req.params;
-  const { date } = req.body; // Expect YYYY-MM-DD
+  const { date, imageUrl } = req.body; // Expect YYYY-MM-DD
 
   try {
     const user = await User.findOne({ where: { firebaseUid } });
@@ -87,15 +112,23 @@ export const toggleHabitLog = async (req, res) => {
     });
 
     if (existingLog) {
-      await existingLog.destroy();
-      res.json({ message: 'Habit uncompleted', completed: false });
+      // If imageUrl is provided, update the log instead of destroying it
+      if (imageUrl) {
+        existingLog.imageUrl = imageUrl;
+        await existingLog.save();
+        res.json({ message: 'Habit updated', completed: true, log: existingLog });
+      } else {
+        await existingLog.destroy();
+        res.json({ message: 'Habit uncompleted', completed: false });
+      }
     } else {
-      await HabitLog.create({
+      const newLog = await HabitLog.create({
         habitId: habit.id,
         date: date,
-        completed: true
+        completed: true,
+        imageUrl: imageUrl || null
       });
-      res.json({ message: 'Habit completed', completed: true });
+      res.json({ message: 'Habit completed', completed: true, log: newLog });
     }
   } catch (error) {
     console.error('Error toggling habit log:', error);
