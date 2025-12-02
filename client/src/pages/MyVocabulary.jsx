@@ -13,6 +13,8 @@ const MyVocabulary = () => {
   const { code } = useParams();
   const navigate = useNavigate();
   const [filterCategory, setFilterCategory] = useState('');
+  const [searchWord, setSearchWord] = useState('');
+  const [searchTranslation, setSearchTranslation] = useState('');
   const [editingVocabId, setEditingVocabId] = useState(null);
   const [vocabForm, setVocabForm] = useState({ 
     word: '', 
@@ -43,12 +45,21 @@ const MyVocabulary = () => {
 
   const sortedVocabulary = React.useMemo(() => {
     if (!vocabulary) return [];
-    return [...vocabulary].sort((a, b) => {
+    let filtered = [...vocabulary];
+
+    if (searchWord) {
+      filtered = filtered.filter(v => v.word.toLowerCase().includes(searchWord.toLowerCase()));
+    }
+    if (searchTranslation) {
+      filtered = filtered.filter(v => v.translation.toLowerCase().includes(searchTranslation.toLowerCase()));
+    }
+
+    return filtered.sort((a, b) => {
         const strengthA = a.UserVocabularies?.[0]?.strength || 0;
         const strengthB = b.UserVocabularies?.[0]?.strength || 0;
         return strengthA - strengthB;
     });
-  }, [vocabulary]);
+  }, [vocabulary, searchWord, searchTranslation]);
 
   const handleEdit = (vocab) => {
     setEditingVocabId(vocab.id);
@@ -197,8 +208,8 @@ const MyVocabulary = () => {
                 </div>
             )}
 
-            <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', padding: '15px', backgroundColor: 'var(--color-cream)', border: '2px solid var(--border-color)', borderRadius: '8px' }}>
-              <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', padding: '15px', backgroundColor: 'var(--color-cream)', border: '2px solid var(--border-color)', borderRadius: '8px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>{STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.CATEGORY}</label>
                 <Select
                   value={filterCategory}
@@ -209,6 +220,26 @@ const MyVocabulary = () => {
                   ]}
                   placeholder={STRINGS.VOCAB_CMS.VOCABULARY.FILTERS.ALL_CATEGORIES}
                 />
+              </div>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Search Word</label>
+                 <input 
+                    className="retro-input" 
+                    placeholder="Search by word..."
+                    value={searchWord}
+                    onChange={e => setSearchWord(e.target.value)}
+                    style={{ width: '100%' }}
+                 />
+              </div>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Search Translation</label>
+                 <input 
+                    className="retro-input" 
+                    placeholder="Search by translation..."
+                    value={searchTranslation}
+                    onChange={e => setSearchTranslation(e.target.value)}
+                    style={{ width: '100%' }}
+                 />
               </div>
             </div>
 
