@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import Select from '../components/Select';
-import { useGet, usePost } from '../hooks/useApi';
+import { useGet, usePost, usePut, useDelete } from '../hooks/useApi';
 import { useAuth } from '../contexts/AuthContext';
 import { STRINGS } from '../constants/strings';
 import { ENDPOINTS } from '../constants/endpoints';
@@ -11,6 +11,7 @@ const VocabCMS = () => {
   const [activeTab, setActiveTab] = useState('categories');
   const [filterLanguage, setFilterLanguage] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
+  const [editingVocabId, setEditingVocabId] = useState(null);
 
   const { data: categories, refetch: refetchCategories } = useGet(ENDPOINTS.CATEGORIES.BASE);
   const { data: languages } = useGet(ENDPOINTS.LANGUAGES.GET_ALL);
@@ -25,6 +26,8 @@ const VocabCMS = () => {
   
   const { post: createCategory } = usePost();
   const { post: createVocab } = usePost();
+  const { put: updateVocab } = usePut();
+  const { del: deleteVocab } = useDelete();
 
   const [catForm, setCatForm] = useState({ name: '', slug: '', description: '' });
   const [vocabForm, setVocabForm] = useState({ 
@@ -66,10 +69,18 @@ const VocabCMS = () => {
   const handleVocabSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createVocab(ENDPOINTS.VOCABULARY.BASE, {
-        ...vocabForm,
-        createdBy: dbUser?.id
-      });
+      if (editingVocabId) {
+        await updateVocab(`${ENDPOINTS.VOCABULARY.BASE}/${editingVocabId}`, {
+          ...vocabForm
+        });
+        setEditingVocabId(null);
+      } else {
+        await createVocab(ENDPOINTS.VOCABULARY.BASE, {
+          ...vocabForm,
+          createdBy: dbUser?.id
+        });
+      }
+      
       setVocabForm({ 
         word: '', 
         translation: '', 
@@ -80,6 +91,40 @@ const VocabCMS = () => {
       refetchVocab();
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleEdit = (vocab) => {
+    setEditingVocabId(vocab.id);
+    setVocabForm({
+      word: vocab.word,
+      translation: vocab.translation,
+      languageId: vocab.languageId,
+      categoryId: vocab.categoryId,
+      difficultyLevel: vocab.difficultyLevel
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingVocabId(null);
+    setVocabForm({ 
+      word: '', 
+      translation: '', 
+      languageId: '', 
+      categoryId: '',
+      difficultyLevel: 'beginner'
+    });
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this word?')) {
+      try {
+        await deleteVocab(`${ENDPOINTS.VOCABULARY.BASE}/${id}`);
+        refetchVocab();
+      } catch (error) {
+        console.error("Failed to delete vocabulary", error);
+      }
     }
   };
 
@@ -142,7 +187,7 @@ const VocabCMS = () => {
 
         {activeTab === 'vocabulary' && (
           <div className="retro-card">
-            <h2>{STRINGS.VOCAB_CMS.VOCABULARY.MANAGE_TITLE}</h2>
+            <h2>{editingVocabId ? STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.UPDATE : STRINGS.VOCAB_CMS.VOCABULARY.MANAGE_TITLE}</h2>
             <form onSubmit={handleVocabSubmit} style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <Select
@@ -188,7 +233,16 @@ const VocabCMS = () => {
                 placeholder="Select Level"
               />
 
-              <button className="retro-btn" type="submit">{STRINGS.VOCAB_CMS.VOCABULARY.ADD_BUTTON}</button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="retro-btn" type="submit">
+                  {editingVocabId ? STRINGS.VOCAB_CMS.VOCABULARY.FORM.UPDATE_BTN : STRINGS.VOCAB_CMS.VOCABULARY.ADD_BUTTON}
+                </button>
+                {editingVocabId && (
+                  <button className="retro-btn secondary" type="button" onClick={handleCancelEdit}>
+                    {STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.CANCEL}
+                  </button>
+                )}
+              </div>
             </form>
 
             <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', padding: '15px', backgroundColor: 'var(--color-cream)', border: '2px solid var(--border-color)', borderRadius: '8px' }}>
@@ -228,6 +282,7 @@ const VocabCMS = () => {
                     <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}</th>
                     <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LEVEL}</th>
                     <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CREATED_BY}</th>
+                    <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.ACTIONS}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -243,6 +298,22 @@ const VocabCMS = () => {
                         </span>
                       </td>
                       <td style={{ padding: '15px' }}>{vocab.creator?.displayName || 'Unknown'}</td>
+                      <td style={{ padding: '15px' }}>
+                        <button 
+                          className="retro-btn secondary" 
+                          style={{ padding: '5px 10px', fontSize: '12px', marginRight: '5px' }}
+                          onClick={() => handleEdit(vocab)}
+                        >
+                          {STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.EDIT}
+                        </button>
+                        <button 
+                          className="retro-btn secondary" 
+                          style={{ padding: '5px 10px', fontSize: '12px', backgroundColor: '#E76F51', color: 'white' }}
+                          onClick={() => handleDelete(vocab.id)}
+                        >
+                          {STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.DELETE}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

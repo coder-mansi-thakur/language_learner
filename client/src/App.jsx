@@ -50,7 +50,7 @@ function App() {
             <Route path="/learn/:code" element={<LanguageLearn />} />
             <Route path="/add-word/:code" element={<AddWord />} />
             <Route path="/practice/:code" element={<Practice />} />
-            <Route path="/my-vocab" element={<MyVocabulary />} />
+            <Route path="/my-vocab/:code" element={<MyVocabulary />} />
             <Route path="/image-extractor" element={<ImageTextExtractor />} />
             <Route path="/image-extractor/:code" element={<ImageTextExtractor />} />
             <Route path="/admin/vocab" element={<VocabCMS />} />

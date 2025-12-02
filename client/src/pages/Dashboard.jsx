@@ -51,15 +51,6 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="retro-container">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
-            <button 
-                className="retro-btn secondary" 
-                onClick={() => navigate('/my-vocab')}
-            >
-                My Vocabulary
-            </button>
-        </div>
-        
         {learningLanguages.length > 0 && (
           <>
             <h2 style={{ marginBottom: '20px' }}>{STRINGS.DASHBOARD.MY_LANGUAGES}</h2>

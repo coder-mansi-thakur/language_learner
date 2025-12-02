@@ -112,13 +112,18 @@ export const STRINGS = {
       ACTIONS: {
         GET_WORD: "Get Word",
         TRANSLATE: "Translate",
+        EDIT: "Edit",
+        DELETE: "Delete",
+        CANCEL: "Cancel",
+        UPDATE: "Update",
       },
       FORM: {
         WORD: "Word",
         TRANSLATION: "Translation",
         PRONUNCIATION: "Pronunciation (Optional)",
         EXAMPLE: "Example Sentence (Optional)",
-        ADD_BTN: "Add to Library"
+        ADD_BTN: "Add to Library",
+        UPDATE_BTN: "Update Word",
       },
       TABLE: {
         WORD: "Word",
@@ -127,6 +132,7 @@ export const STRINGS = {
         CATEGORY: "Category",
         LEVEL: "Level",
         CREATED_BY: "Created By",
+        ACTIONS: "Actions",
       },
       FILTERS: {
         LANGUAGE: "Filter by Language:",

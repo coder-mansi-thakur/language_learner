@@ -53,7 +53,7 @@ const LanguageLearn = () => {
             </button>
             <button 
                 className="retro-btn secondary" 
-                onClick={() => navigate('/my-vocab')}
+                onClick={() => navigate(`/my-vocab/${code}`)}
             >
                 My Vocabulary
             </button>
