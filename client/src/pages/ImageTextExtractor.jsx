@@ -80,7 +80,7 @@ const ImageTextExtractor = () => {
       const mimeType = base64Data.split(';')[0].split(':')[1];
 
       const prompt = `Extract all text from this image. The language is likely ${sourceLang}.
-       Return a JSON object with two keys: "text" containing the full extracted text, and "words" containing an array of unique words found in the text.
+       Return a JSON object with two keys: "text" containing the full extracted text, and "words" containing an array of objects with "word" (original word) and "translation" (English translation).
         Return only the JSON string, no markdown formatting.
         And return in ${sourceLang} language words only. Just the vocab words without any grammar or punctuation.
         `;
@@ -115,7 +115,7 @@ const ImageTextExtractor = () => {
     }
   };
 
-  const processExtractedText = (text) => {
+  const processExtractedText = async (text) => {
     setText(text);
     // Simple tokenization: split by whitespace and remove punctuation
     const foundWords = text
@@ -124,8 +124,43 @@ const ImageTextExtractor = () => {
       .filter(w => w.length > 0);
 
     // Remove duplicates
-    setWords([...new Set(foundWords)]);
+    const uniqueWords = [...new Set(foundWords)].map(w => ({ word: w, translation: '', translating: true }));
+    setWords(uniqueWords);
     setLoading(false);
+
+    if (uniqueWords.length === 0) return;
+
+    try {
+      // Map Tesseract lang to Translation API lang
+      let sourceCode = 'en';
+      let targetCode = 'es';
+
+      if (sourceLang === 'kor') {
+        sourceCode = 'ko';
+        targetCode = 'en';
+      } else if (sourceLang === 'hin') {
+        sourceCode = 'hi';
+        targetCode = 'en';
+      }
+
+      // Bulk translate
+      const textToTranslate = uniqueWords.map(w => w.word).join('\n');
+      const translatedText = await translateText(textToTranslate, sourceCode, targetCode);
+      
+      const translations = translatedText.split('\n');
+      
+      const updatedWords = uniqueWords.map((w, i) => ({
+        ...w,
+        translation: translations[i] ? translations[i].trim() : '',
+        translating: false
+      }));
+
+      setWords(updatedWords);
+    } catch (error) {
+      console.error("Bulk translation failed", error);
+      // Fallback: mark all as not translating
+      setWords(uniqueWords.map(w => ({ ...w, translating: false })));
+    }
   };
 
   const extractTextWithOCRSpace = async () => {
@@ -206,11 +241,11 @@ const ImageTextExtractor = () => {
       });
   };
 
-  const handleWordClick = async (word) => {
-    setSelectedWord(word);
-    setTranslation('');
-    setTranslating(true);
-    setAddMessage('');
+  const handleTranslateWord = async (index, word) => {
+    const newWords = [...words];
+    newWords[index].translating = true;
+    setWords(newWords);
+
     try {
       // Map Tesseract lang to Translation API lang
       let sourceCode = 'en';
@@ -225,22 +260,24 @@ const ImageTextExtractor = () => {
       }
 
       const result = await translateText(word, sourceCode, targetCode);
-      setTranslation(result);
+      newWords[index].translation = result;
     } catch (error) {
-      setTranslation(STRINGS.IMAGE_EXTRACTOR.ERROR_TRANSLATING);
+      console.error("Translation error", error);
     } finally {
-      setTranslating(false);
+      newWords[index].translating = false;
+      setWords([...newWords]);
     }
   };
 
-  const handleAddToVocab = async () => {
+  const handleAddToVocab = async (wordObj, index) => {
     if (!dbUser) {
-      setAddMessage(STRINGS.IMAGE_EXTRACTOR.LOGIN_REQUIRED);
+      alert(STRINGS.IMAGE_EXTRACTOR.LOGIN_REQUIRED);
       return;
     }
 
-    setAddingToVocab(true);
-    setAddMessage('');
+    const newWords = [...words];
+    newWords[index].adding = true;
+    setWords(newWords);
 
     try {
       // Find language ID
@@ -248,39 +285,36 @@ const ImageTextExtractor = () => {
       if (sourceLang === 'kor') langCodeToFind = 'ko';
       if (sourceLang === 'hin') langCodeToFind = 'hi';
 
-      // Note: This assumes the languages in DB match these codes. 
-      // If not, we might need better mapping or fuzzy matching.
       const language = languages?.find(l => l.code === langCodeToFind);
 
       if (!language) {
-        setAddMessage(STRINGS.IMAGE_EXTRACTOR.LANGUAGE_NOT_FOUND);
-        setAddingToVocab(false);
+        alert(STRINGS.IMAGE_EXTRACTOR.LANGUAGE_NOT_FOUND);
+        newWords[index].adding = false;
+        setWords(newWords);
         return;
       }
 
-      // Use first category or a default one
-      const categoryId = null;
-
       await createVocab(ENDPOINTS.VOCABULARY.BASE, {
-        word: selectedWord,
-        translation: translation,
+        word: wordObj.word,
+        translation: wordObj.translation,
         difficultyLevel: 'beginner',
-        categoryId: categoryId,
+        categoryId: null,
         languageId: language.id,
         createdBy: dbUser.id
       });
 
-      setAddMessage(STRINGS.IMAGE_EXTRACTOR.ADDED_SUCCESS);
+      newWords[index].added = true;
+      setWords(newWords);
       refetchUserVocab();
     } catch (error) {
       console.error(error);
       if (error.response && error.response.status === 409) {
-        setAddMessage(STRINGS.IMAGE_EXTRACTOR.ERROR_EXISTS);
+        alert(STRINGS.IMAGE_EXTRACTOR.ERROR_EXISTS);
       } else {
-        setAddMessage(STRINGS.IMAGE_EXTRACTOR.ERROR_ADDING);
+        alert(STRINGS.IMAGE_EXTRACTOR.ERROR_ADDING);
       }
-    } finally {
-      setAddingToVocab(false);
+      newWords[index].adding = false;
+      setWords(newWords);
     }
   };
 
@@ -295,7 +329,7 @@ const ImageTextExtractor = () => {
         .map(v => clean(v.Vocabulary.word))
     );
     
-    return words.filter(w => !userWordSet.has(clean(w)));
+    return words.filter(w => !userWordSet.has(clean(w.word)));
   }, [words, onlyNewWords, userVocab]);
 
   return (
@@ -382,57 +416,47 @@ const ImageTextExtractor = () => {
                 </label>
               </div>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              {displayedWords.map((word, index) => (
-                <span
-                  key={index}
-                  onClick={() => handleWordClick(word)}
-                  style={{
-                    cursor: 'pointer',
-                    padding: '5px 10px',
-                    backgroundColor: selectedWord === word ? 'var(--color-orange)' : 'var(--color-white)',
-                    color: selectedWord === word ? 'var(--color-white)' : 'var(--text-main)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '4px'
-                  }}
-                >
-                  {word}
-                </span>
-              ))}
+            <div style={{ overflowX: 'auto' }}>
+              <table className="retro-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '10px', borderBottom: '2px solid var(--border-color)' }}>{STRINGS.IMAGE_EXTRACTOR.WORD_LABEL}</th>
+                    <th style={{ textAlign: 'left', padding: '10px', borderBottom: '2px solid var(--border-color)' }}>{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_LABEL}</th>
+                    <th style={{ textAlign: 'left', padding: '10px', borderBottom: '2px solid var(--border-color)' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedWords.map((item, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '10px' }}>{item.word}</td>
+                      <td style={{ padding: '10px' }}>
+                        {item.translation ? (
+                          item.translation
+                        ) : (
+                          <button
+                            className="retro-btn secondary small"
+                            onClick={() => handleTranslateWord(index, item.word)}
+                            disabled={item.translating}
+                          >
+                            {item.translating ? STRINGS.IMAGE_EXTRACTOR.LOADING : 'Translate'}
+                          </button>
+                        )}
+                      </td>
+                      <td style={{ padding: '10px' }}>
+                        <button
+                          className="retro-btn primary small"
+                          onClick={() => handleAddToVocab(item, index)}
+                          disabled={item.adding || item.added || !item.translation}
+                          style={{ opacity: item.added ? 0.5 : 1 }}
+                        >
+                          {item.adding ? 'Adding...' : item.added ? 'Added' : 'Add'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        )}
-
-        {selectedWord && (
-          <div className="retro-card" style={{ marginTop: '20px', border: '2px solid var(--color-orange)' }}>
-            <h3 className="retro-subtitle">{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_TITLE}</h3>
-            <p><strong>{STRINGS.IMAGE_EXTRACTOR.WORD_LABEL}</strong> {selectedWord}</p>
-            <p>
-              <strong>{STRINGS.IMAGE_EXTRACTOR.TRANSLATION_LABEL}</strong>
-              {translating ? ` ${STRINGS.IMAGE_EXTRACTOR.LOADING}` : ` ${translation}`}
-            </p>
-
-            {!translating && translation && (
-              <div style={{ marginTop: '15px' }}>
-                <button
-                  className="retro-btn secondary"
-                  onClick={handleAddToVocab}
-                  disabled={addingToVocab}
-                  style={{ width: '100%' }}
-                >
-                  {addingToVocab ? STRINGS.IMAGE_EXTRACTOR.LOADING : STRINGS.IMAGE_EXTRACTOR.ADD_TO_VOCAB}
-                </button>
-                {addMessage && (
-                  <p style={{
-                    marginTop: '10px',
-                    color: addMessage === STRINGS.IMAGE_EXTRACTOR.ADDED_SUCCESS ? 'green' : 'red',
-                    fontWeight: 'bold'
-                  }}>
-                    {addMessage}
-                  </p>
-                )}
-              </div>
-            )}
           </div>
         )}
       </div>

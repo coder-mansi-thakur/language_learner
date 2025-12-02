@@ -20,8 +20,9 @@ export const translateText = async (text, from, to) => {
     const response = await fetch(url);
     const data = await response.json();
     
-    if (data && data[0] && data[0][0] && data[0][0][0]) {
-      return data[0][0][0];
+    if (data && data[0]) {
+      // Join all translated segments
+      return data[0].map(segment => segment[0]).join('');
     } else {
       throw new Error('Translation failed');
     }
