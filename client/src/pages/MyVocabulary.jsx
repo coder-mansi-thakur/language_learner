@@ -23,7 +23,6 @@ const MyVocabulary = () => {
   });
 
   const { data: categories, refetch: refetchCategories } = useGet(ENDPOINTS.CATEGORIES.BASE);
-  const { data: languages } = useGet(ENDPOINTS.LANGUAGES.GET_ALL);
   const { data: language } = useGet(ENDPOINTS.LANGUAGES.GET_BY_CODE(code));
   
   // Construct query string for vocabulary
@@ -134,13 +133,6 @@ const MyVocabulary = () => {
                     <h2 style={{ marginTop: 0 }}>{STRINGS.VOCAB_CMS.VOCABULARY.ACTIONS.UPDATE}</h2>
                     <form onSubmit={handleUpdateSubmit} style={{ display: 'grid', gap: '15px' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                            <Select
-                            value={vocabForm.languageId}
-                            onChange={(val) => setVocabForm({...vocabForm, languageId: val})}
-                            options={languages?.map(l => ({ value: l.id, label: l.name })) || []}
-                            required
-                            placeholder={STRINGS.VOCAB_CMS.VOCABULARY.SELECT_LANGUAGE}
-                            />
                             <Select
                             value={vocabForm.categoryId}
                             onChange={(val) => setVocabForm({...vocabForm, categoryId: val})}
