@@ -58,6 +58,7 @@ export const STRINGS = {
     BACK: "← Back",
   },
   PRACTICE: {
+    BACK_DASHBOARD: "Back to Dashboard",
     SESSION_COMPLETE: "Session Complete! 🎉",
     ALL_MASTERED: "You're done for today! 🌟",
     ALL_MASTERED_DESC: "You have mastered all available vocabulary for this language!",
@@ -86,6 +87,14 @@ export const STRINGS = {
       HARD: "Hard",
       GOOD: "Good",
       EASY: "Easy",
+    },
+    SETUP: {
+      TITLE: "Practice Setup",
+      NEW_WORDS_COUNT: "New Words to Learn",
+      REVIEW_WORDS_COUNT: "Words to Review",
+      START_BUTTON: "Start Practice",
+      NO_NEW_WORDS: "No new words available.",
+      NO_REVIEW_WORDS: "No words to review.",
     }
   },
   VOCAB_CMS: {

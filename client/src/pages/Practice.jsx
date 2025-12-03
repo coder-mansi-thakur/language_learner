@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
+import Input from '../components/Input';
 import { useGet, usePost, usePut, useDelete } from '../hooks/useApi';
 import { useAuth } from '../contexts/AuthContext';
 import { STRINGS } from '../constants/strings';
@@ -40,9 +41,12 @@ const Practice = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingData, setEditingData] = useState({});
 
-  const { due, mastered, combined } = useMemo(() => {
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
+  const [newWordsCount, setNewWordsCount] = useState(5);
+
+  const { reviewItems, mastered, combined, newItems } = useMemo(() => {
     if ((mode === 'vocab' && !userProgress) || (mode === 'sentences' && !sentences)) {
-      return { due: [], mastered: [], combined: [] };
+      return { reviewItems: [], mastered: [], combined: [], newItems: [] };
     }
     
     let allItems = [];
@@ -65,14 +69,32 @@ const Practice = () => {
       }));
     }
 
-    const due = allItems.filter(w => w.userProgress?.status === 'learning' || w.userProgress?.status === 'review' || w.userProgress?.nextReviewDate === null || new Date(w.userProgress?.nextReviewDate) <= new Date()|| w.userProgress?.status === 'new');
+    // reviewItems: items that need review (status learning/review AND due date passed)
+    const reviewItems = allItems.filter(w => {
+        const status = w.userProgress?.status;
+        const nextReview = w.userProgress?.nextReviewDate;
+        const isDue = !nextReview || new Date(nextReview) <= new Date();
+        return (status === 'learning' || status === 'review') && isDue;
+    });
+
+    // newItems: items that are new (status 'new' or no status)
+    const newItems = allItems.filter(w => w.userProgress?.status === 'new' || !w.userProgress?.status);
+    
     const mastered = allItems.filter(w => w.userProgress?.status === 'mastered');
     
-    return { due, mastered, combined: allItems };
+    return { reviewItems, mastered, combined: allItems, newItems };
   }, [userProgress, sentences, mode]);
+
+  useEffect(() => {
+    if (newItems.length > 0 && newWordsCount > newItems.length) {
+      setNewWordsCount(newItems.length);
+    }
+  }, [newItems.length]);
 
   // Prepare the queue when data is ready
   useEffect(() => {
+    if (!isSetupComplete) return;
+
     // Prevent reshuffling if queue is already populated with correct type
     if (queue.length > 0) {
       const currentType = mode === 'vocab' ? 'vocab' : 'sentence';
@@ -82,28 +104,33 @@ const Practice = () => {
     }
 
     if ((mode === 'vocab' && userProgress) || (mode === 'sentences' && sentences)) {
-      if (due.length === 0 && mastered.length > 0) {
+      if (reviewItems.length === 0 && newItems.length === 0 && mastered.length > 0) {
         setIsDoneForToday(true);
         return;
       }
 
-      // Create a session queue: 10 due + 5 mastered
-      // Shuffle helper
       const shuffle = (array) => array.sort(() => Math.random() - 0.5);
 
+      const selectedNewItems = shuffle(newItems).slice(0, newWordsCount);
+      const selectedReviewItems = shuffle(reviewItems);
+
       const sessionQueue = [
-        ...shuffle(due),
-        ...shuffle(mastered)
+        ...selectedReviewItems,
+        ...selectedNewItems
       ];
 
       // If queue is empty (e.g. no words), just show all shuffled
       if (sessionQueue.length === 0 && combined.length > 0) {
-        setQueue(shuffle(combined));
+         if (mastered.length > 0) {
+             setIsDoneForToday(true);
+         } else {
+             setQueue(shuffle(combined));
+         }
       } else {
         setQueue(sessionQueue);
       }
     }
-  }, [userProgress, sentences, due, mastered, combined, mode, queue]);
+  }, [isSetupComplete, userProgress, sentences, reviewItems, mastered, combined, mode, queue, newItems, newWordsCount]);
 
   const handlePracticeRest = () => {
     const shuffle = (array) => array.sort(() => Math.random() - 0.5);
@@ -269,6 +296,56 @@ const Practice = () => {
     );
   }
 
+  if (!isSetupComplete) {
+    return (
+      <Layout>
+        <div className="retro-container" style={{ textAlign: 'center' }}>
+          <div className="retro-card">
+            <h1>{STRINGS.PRACTICE.SETUP.TITLE}</h1>
+            
+            <div style={{ margin: '20px 0', textAlign: 'left' }}>
+              <p><strong>{STRINGS.PRACTICE.SETUP.REVIEW_WORDS_COUNT}:</strong> {reviewItems.length}</p>
+              <p><strong>{STRINGS.PRACTICE.SETUP.NEW_WORDS_COUNT}:</strong> {newItems.length}</p>
+            </div>
+
+            {newItems.length > 0 ? (
+              <div style={{ marginBottom: '20px', textAlign: 'left', display: 'flex', flexDirection: 'row' }}>
+                <label style={{ display: 'block', marginBottom: '10px' }}>
+                  {STRINGS.PRACTICE.SETUP.NEW_WORDS_COUNT}
+                </label>
+                <Input 
+                  type="number" 
+                  min="0" 
+                  max={newItems.length} 
+                  value={newWordsCount} 
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (isNaN(val)) setNewWordsCount(0);
+                    else if (val > newItems.length) setNewWordsCount(newItems.length);
+                    else if (val < 0) setNewWordsCount(0);
+                    else setNewWordsCount(val);
+                  }}
+                  style={{ width: '200px', marginLeft: '10px' }}
+                />
+              </div>
+            ) : (
+              <p style={{ marginBottom: '20px', fontStyle: 'italic' }}>{STRINGS.PRACTICE.SETUP.NO_NEW_WORDS}</p>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              <button className="retro-btn" onClick={() => setIsSetupComplete(true)}>
+                {STRINGS.PRACTICE.SETUP.START_BUTTON}
+              </button>
+              <button className="retro-btn secondary" onClick={() => navigate('/dashboard')}>
+                {STRINGS.PRACTICE.BACK_DASHBOARD}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   if (isDoneForToday) {
     return (
       <Layout>
@@ -428,47 +505,47 @@ const Practice = () => {
                 <>
                   <div style={{ marginBottom: '10px' }}>
                     <label>{STRINGS.PRACTICE.WORD}</label>
-                    <input 
+                    <Input 
                       type="text" 
                       value={editingData.word} 
                       onChange={(e) => setEditingData({ ...editingData, word: e.target.value })}
-                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                      style={{ width: '100%', marginTop: '4px' }}
                     />
                   </div>
                   <div style={{ marginBottom: '10px' }}>
                     <label>{STRINGS.PRACTICE.TRANSLATION}</label>
-                    <input 
+                    <Input 
                       type="text" 
                       value={editingData.translation} 
                       onChange={(e) => setEditingData({ ...editingData, translation: e.target.value })}
-                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                      style={{ width: '100%', marginTop: '4px' }}
                     />
                   </div>
                   <div style={{ marginBottom: '10px' }}>
                     <label>{STRINGS.PRACTICE.PRONUNCIATION}</label>
-                    <input 
+                    <Input 
                       type="text" 
                       value={editingData.pronunciation} 
                       onChange={(e) => setEditingData({ ...editingData, pronunciation: e.target.value })}
-                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                      style={{ width: '100%', marginTop: '4px' }}
                     />
                   </div>
                   <div style={{ marginBottom: '10px' }}>
                     <label>{STRINGS.PRACTICE.EXAMPLE_SENTENCE}</label>
-                    <input 
+                    <Input 
                       type="text" 
                       value={editingData.exampleSentence} 
                       onChange={(e) => setEditingData({ ...editingData, exampleSentence: e.target.value })}
-                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                      style={{ width: '100%', marginTop: '4px' }}
                     />
                   </div>
                   <div style={{ marginBottom: '10px' }}>
                     <label>{STRINGS.PRACTICE.EXAMPLE_TRANSLATION}</label>
-                    <input 
+                    <Input 
                       type="text" 
                       value={editingData.exampleTranslation} 
                       onChange={(e) => setEditingData({ ...editingData, exampleTranslation: e.target.value })}
-                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                      style={{ width: '100%', marginTop: '4px' }}
                     />
                   </div>
                 </>
@@ -476,20 +553,20 @@ const Practice = () => {
                 <>
                   <div style={{ marginBottom: '10px' }}>
                     <label>{STRINGS.PRACTICE.ORIGINAL_SENTENCE}</label>
-                    <input 
+                    <Input 
                       type="text" 
                       value={editingData.originalSentence} 
                       onChange={(e) => setEditingData({ ...editingData, originalSentence: e.target.value })}
-                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                      style={{ width: '100%', marginTop: '4px' }}
                     />
                   </div>
                   <div style={{ marginBottom: '10px' }}>
                     <label>{STRINGS.PRACTICE.TRANSLATED_SENTENCE}</label>
-                    <input 
+                    <Input 
                       type="text" 
                       value={editingData.translatedSentence} 
                       onChange={(e) => setEditingData({ ...editingData, translatedSentence: e.target.value })}
-                      style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                      style={{ width: '100%', marginTop: '4px' }}
                     />
                   </div>
                   {/* Add other fields for sentences if necessary */}
