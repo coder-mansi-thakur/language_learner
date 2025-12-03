@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { User, Sentence, UserVocabulary, Vocabulary, Language } from '../models/associations.js';
 import { Op } from 'sequelize';
+import { FSRS, Rating, State } from '../utils/fsrs.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -180,7 +181,7 @@ export const updateSentence = async (req, res) => {
 
 export const updateSentenceProgress = async (req, res) => {
   const { firebaseUid } = req.params;
-  const { sentenceId, status, strength } = req.body;
+  const { sentenceId, status, strength, rating } = req.body;
 
   try {
     const user = await User.findOne({ where: { firebaseUid } });
@@ -195,27 +196,56 @@ export const updateSentenceProgress = async (req, res) => {
 
     if (!sentence) return res.status(404).json({ message: 'Sentence not found' });
 
-    sentence.status = status || sentence.status;
+    const fsrs = new FSRS();
+    const now = new Date();
+    const ratingValue = rating || Rating.Good;
+
+    // Map status to State
+    const statusToState = (status) => {
+        switch (status) {
+            case 'new': return State.New;
+            case 'learning': return State.Learning;
+            case 'review': return State.Review;
+            case 'mastered': return State.Review;
+            default: return State.New;
+        }
+    };
+
+    const stateToStatus = (state) => {
+        switch (state) {
+            case State.New: return 'new';
+            case State.Learning: return 'learning';
+            case State.Relearning: return 'learning'; // Map Relearning to learning
+            case State.Review: return 'review';
+            default: return 'learning';
+        }
+    };
+
+    const card = {
+      due: sentence.nextReviewDate || now,
+      stability: sentence.stability,
+      difficulty: sentence.difficulty,
+      reps: sentence.reps,
+      lapses: sentence.lapses,
+      state: statusToState(sentence.status),
+      last_review: sentence.lastReviewed || now
+    };
+
+    const scheduling_cards = fsrs.repeat(card, now);
+    const new_card = scheduling_cards[ratingValue];
+
+    sentence.status = stateToStatus(new_card.state);
     sentence.strength = strength !== undefined ? strength : sentence.strength;
-    sentence.lastReviewed = new Date();
+    sentence.lastReviewed = now;
 
-    // Calculate next review date based on strength
-    // Simple SRS: 
-    // 0.0 - 0.2: 1 day
-    // 0.2 - 0.4: 3 days
-    // 0.4 - 0.6: 7 days
-    // 0.6 - 0.8: 14 days
-    // 0.8 - 1.0: 30 days
-    let daysToAdd = 1;
-    const s = sentence.strength;
-    if (s >= 0.8) daysToAdd = 30;
-    else if (s >= 0.6) daysToAdd = 14;
-    else if (s >= 0.4) daysToAdd = 7;
-    else if (s >= 0.2) daysToAdd = 3;
+    // Update FSRS fields
+    sentence.stability = new_card.stability;
+    sentence.difficulty = new_card.difficulty;
+    sentence.reps = new_card.reps;
+    sentence.lapses = new_card.lapses;
 
-    const nextDate = new Date();
-    nextDate.setDate(nextDate.getDate() + daysToAdd);
-    sentence.nextReviewDate = nextDate;
+    // Set next review date
+    sentence.nextReviewDate = new_card.due;
 
     await sentence.save();
 

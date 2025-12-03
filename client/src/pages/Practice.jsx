@@ -247,23 +247,28 @@ const Practice = () => {
     
     let newStatus = 'learning';
     let newStrength = currentCard.userProgress?.strength || 0;
+    let ratingValue = 1;
 
     switch (rating) {
       case 'again':
         newStrength = Math.max(0, newStrength - 0.2);
         newStatus = 'learning';
+        ratingValue = 1;
         break;
       case 'hard':
         newStrength = Math.min(1, newStrength + 0.1);
         newStatus = 'learning';
+        ratingValue = 2;
         break;
       case 'good':
         newStrength = Math.min(1, newStrength + 0.2);
         newStatus = newStrength > 0.8 ? 'mastered' : 'review';
+        ratingValue = 3;
         break;
       case 'easy':
         newStrength = Math.min(1, newStrength + 0.3);
         newStatus = 'mastered';
+        ratingValue = 4;
         break;
       default:
         break;
@@ -274,13 +279,15 @@ const Practice = () => {
         await updateProgress(ENDPOINTS.USER_VOCABULARY.UPDATE_PROGRESS(currentUser.uid), {
           vocabularyId: currentCard.id,
           status: newStatus,
-          strength: newStrength
+          strength: newStrength,
+          rating: ratingValue
         });
       } else {
         await updateProgress(ENDPOINTS.SENTENCES.UPDATE_PROGRESS(currentUser.uid), {
           sentenceId: currentCard.id,
           status: newStatus,
-          strength: newStrength
+          strength: newStrength,
+          rating: ratingValue
         });
       }
 

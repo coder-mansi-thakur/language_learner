@@ -15,6 +15,23 @@ const UserVocabulary = sequelize.define('UserVocabulary', {
     type: DataTypes.FLOAT, // 0.0 to 1.0 representing memory strength
     defaultValue: 0.0,
   },
+  // FSRS fields
+  stability: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0.0,
+  },
+  difficulty: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0.0,
+  },
+  reps: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  lapses: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
   nextReviewDate: {
     type: DataTypes.DATE,
     allowNull: true,

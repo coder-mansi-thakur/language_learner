@@ -1,6 +1,7 @@
 import UserVocabulary from '../models/UserVocabulary.js';
 import Vocabulary from '../models/Vocabulary.js';
 import User from '../models/User.js';
+import { FSRS, Rating, State } from '../utils/fsrs.js';
 
 export const getUserVocabulary = async (req, res) => {
   const { firebaseUid } = req.params;
@@ -57,7 +58,7 @@ export const getUserVocabulary = async (req, res) => {
 
 export const updateWordProgress = async (req, res) => {
   const { firebaseUid } = req.params;
-  const { vocabularyId, status, strength } = req.body;
+  const { vocabularyId, status, strength, rating } = req.body;
 
   try {
     const user = await User.findOne({ where: { firebaseUid } });
@@ -70,42 +71,86 @@ export const updateWordProgress = async (req, res) => {
       }
     });
 
+    const fsrs = new FSRS();
+    const now = new Date();
+    const ratingValue = rating || Rating.Good; // Default to Good
+
+    // Map status to State
+    const statusToState = (status) => {
+        switch (status) {
+            case 'new': return State.New;
+            case 'learning': return State.Learning;
+            case 'review': return State.Review;
+            case 'mastered': return State.Review;
+            default: return State.New;
+        }
+    };
+
+    const stateToStatus = (state) => {
+        switch (state) {
+            case State.New: return 'new';
+            case State.Learning: return 'learning';
+            case State.Relearning: return 'learning'; // Map Relearning to learning
+            case State.Review: return 'review';
+            default: return 'learning';
+        }
+    };
+
     if (userVocab) {
-      userVocab.status = status || userVocab.status;
+      // Use FSRS
+      const card = {
+        due: userVocab.nextReviewDate || now,
+        stability: userVocab.stability,
+        difficulty: userVocab.difficulty,
+        reps: userVocab.reps,
+        lapses: userVocab.lapses,
+        state: statusToState(userVocab.status),
+        last_review: userVocab.lastReviewed || now
+      };
+
+      const scheduling_cards = fsrs.repeat(card, now);
+      const new_card = scheduling_cards[ratingValue];
+
+      userVocab.status = stateToStatus(new_card.state);
       userVocab.strength = strength !== undefined ? strength : userVocab.strength;
-      userVocab.lastReviewed = new Date();
+      userVocab.lastReviewed = now;
       
-      // Calculate next review date based on strength
-      // Simple SRS: 
-      // 0.0 - 0.2: 1 day
-      // 0.2 - 0.4: 3 days
-      // 0.4 - 0.6: 7 days
-      // 0.6 - 0.8: 14 days
-      // 0.8 - 1.0: 30 days
-      let daysToAdd = 1;
-      const s = userVocab.strength;
-      if (s >= 0.8) daysToAdd = 30;
-      else if (s >= 0.6) daysToAdd = 14;
-      else if (s >= 0.4) daysToAdd = 7;
-      else if (s >= 0.2) daysToAdd = 3;
-      
-      const nextDate = new Date();
-      nextDate.setDate(nextDate.getDate() + daysToAdd);
-      userVocab.nextReviewDate = nextDate;
+      // Update FSRS fields
+      userVocab.stability = new_card.stability;
+      userVocab.difficulty = new_card.difficulty;
+      userVocab.reps = new_card.reps;
+      userVocab.lapses = new_card.lapses;
+
+      // Set next review date
+      userVocab.nextReviewDate = new_card.due;
 
       await userVocab.save();
     } else {
       // New word
-      const nextDate = new Date();
-      nextDate.setDate(nextDate.getDate() + 1); // Review tomorrow
-
+      const card = {
+        due: now,
+        reps: 0,
+        lapses: 0,
+        stability: 0,
+        difficulty: 0,
+        state: State.New,
+        last_review: now
+      };
+      
+      const scheduling_cards = fsrs.repeat(card, now);
+      const new_card = scheduling_cards[ratingValue];
+      
       userVocab = await UserVocabulary.create({
         userId: user.id,
         vocabularyId,
-        status: status || 'learning',
+        status: stateToStatus(new_card.state),
         strength: strength || 0,
-        lastReviewed: new Date(),
-        nextReviewDate: nextDate
+        lastReviewed: now,
+        nextReviewDate: new_card.due,
+        stability: new_card.stability,
+        difficulty: new_card.difficulty,
+        reps: new_card.reps,
+        lapses: new_card.lapses
       });
     }
 
