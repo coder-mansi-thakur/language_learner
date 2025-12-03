@@ -23,6 +23,7 @@ const MyVocabulary = () => {
     categoryId: '',
     difficultyLevel: 'beginner'
   });
+  const [sortConfig, setSortConfig] = useState({ key: 'nextReview', direction: 'asc' });
 
   const { data: categories, refetch: refetchCategories } = useGet(ENDPOINTS.CATEGORIES.BASE);
   const { data: language } = useGet(ENDPOINTS.LANGUAGES.GET_BY_CODE(code));
@@ -55,11 +56,45 @@ const MyVocabulary = () => {
     }
 
     return filtered.sort((a, b) => {
-        const strengthA = a.UserVocabularies?.[0]?.strength || 0;
-        const strengthB = b.UserVocabularies?.[0]?.strength || 0;
-        return strengthA - strengthB;
+        let valA, valB;
+        
+        switch (sortConfig.key) {
+            case 'word':
+                valA = a.word.toLowerCase();
+                valB = b.word.toLowerCase();
+                break;
+            case 'translation':
+                valA = a.translation.toLowerCase();
+                valB = b.translation.toLowerCase();
+                break;
+            case 'nextReview':
+                // Handle null dates by treating them as very old (or very new depending on preference)
+                // Here treating null as 0 (epoch) so they appear first in asc sort (overdue/never reviewed)
+                valA = new Date(a.UserVocabularies?.[0]?.nextReviewDate || 0).getTime();
+                valB = new Date(b.UserVocabularies?.[0]?.nextReviewDate || 0).getTime();
+                break;
+            default:
+                 valA = a.UserVocabularies?.[0]?.strength || 0;
+                 valB = b.UserVocabularies?.[0]?.strength || 0;
+        }
+
+        if (valA < valB) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (valA > valB) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
     });
-  }, [vocabulary, searchWord, searchTranslation]);
+  }, [vocabulary, searchWord, searchTranslation, sortConfig]);
+
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
   const handleEdit = (vocab) => {
     setEditingVocabId(vocab.id);
@@ -250,12 +285,27 @@ const MyVocabulary = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                     <tr style={{ borderBottom: '3px solid var(--border-color)', backgroundColor: 'var(--color-cream-dark)' }}>
-                        <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.WORD}</th>
-                        <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.TRANSLATION}</th>
+                        <th 
+                          style={{ textAlign: 'left', padding: '15px', cursor: 'pointer', userSelect: 'none' }} 
+                          onClick={() => handleSort('word')}
+                        >
+                          {STRINGS.VOCAB_CMS.VOCABULARY.TABLE.WORD} {sortConfig.key === 'word' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        </th>
+                        <th 
+                          style={{ textAlign: 'left', padding: '15px', cursor: 'pointer', userSelect: 'none' }} 
+                          onClick={() => handleSort('translation')}
+                        >
+                          {STRINGS.VOCAB_CMS.VOCABULARY.TABLE.TRANSLATION} {sortConfig.key === 'translation' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        </th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.CATEGORY}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.LEVEL}</th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>Mastery</th>
-                        <th style={{ textAlign: 'left', padding: '15px' }}>Next Review</th>
+                        <th 
+                          style={{ textAlign: 'left', padding: '15px', cursor: 'pointer', userSelect: 'none' }} 
+                          onClick={() => handleSort('nextReview')}
+                        >
+                          Next Review {sortConfig.key === 'nextReview' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        </th>
                         <th style={{ textAlign: 'left', padding: '15px' }}>{STRINGS.VOCAB_CMS.VOCABULARY.TABLE.ACTIONS}</th>
                     </tr>
                     </thead>
