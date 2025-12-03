@@ -73,7 +73,17 @@ const Practice = () => {
     const reviewItems = allItems.filter(w => {
         const status = w.userProgress?.status;
         const nextReview = w.userProgress?.nextReviewDate;
-        const isDue = !nextReview || new Date(nextReview) <= new Date();
+        
+        let isDue = !nextReview;
+        if (nextReview) {
+            const reviewDate = new Date(nextReview);
+            const today = new Date();
+            // Compare dates only (ignore time)
+            reviewDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            isDue = reviewDate <= today;
+        }
+        
         return (status === 'learning' || status === 'review') && isDue;
     });
 
@@ -84,6 +94,8 @@ const Practice = () => {
     
     return { reviewItems, mastered, combined: allItems, newItems };
   }, [userProgress, sentences, mode]);
+  console.log("🚀 ~ Practice ~ reviewItems, mastered, combined, newItems:", reviewItems, mastered, combined, newItems)
+
 
   useEffect(() => {
     if (newItems.length > 0 && newWordsCount > newItems.length) {
