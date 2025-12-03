@@ -316,13 +316,13 @@ const Practice = () => {
             <h1>{STRINGS.PRACTICE.SETUP.TITLE}</h1>
             
             <div style={{ margin: '20px 0', textAlign: 'left' }}>
-              <p><strong>{STRINGS.PRACTICE.SETUP.REVIEW_WORDS_COUNT}:</strong> {reviewItems.length}</p>
-              <p><strong>{STRINGS.PRACTICE.SETUP.NEW_WORDS_COUNT}:</strong> {newItems.length}</p>
+              <p><>{STRINGS.PRACTICE.SETUP.REVIEW_WORDS_COUNT}:</> {reviewItems.length}</p>
+              <p><>{STRINGS.PRACTICE.SETUP.NEW_WORDS_COUNT}:</> {newItems.length}</p>
             </div>
 
             {newItems.length > 0 ? (
               <div style={{ marginBottom: '20px', textAlign: 'left', display: 'flex', flexDirection: 'row' }}>
-                <label style={{ display: 'block', marginBottom: '10px' }}>
+                <label style={{ display: 'flex', marginBottom: '10px', alignItems: 'center' }}>
                   {STRINGS.PRACTICE.SETUP.NEW_WORDS_COUNT}
                 </label>
                 <Input 
